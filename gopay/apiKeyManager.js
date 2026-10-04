@@ -35,19 +35,41 @@ class ApiKeyManager {
     return [...new Set(paths)];
   }
 
-  init() {
-    let loadedData = null;
+  mergeKeys(newKeys) {
+    if (!Array.isArray(newKeys)) return;
+    for (const nk of newKeys) {
+      if (!nk || !nk.key) continue;
+      const existingIndex = this.keys.findIndex(k => k.key === nk.key);
+      if (existingIndex >= 0) {
+        const existing = this.keys[existingIndex];
+        // Preserve tokens if new key has valid tokens
+        if (nk.tokens && nk.tokens.accessToken) {
+          if (!existing.tokens || !existing.tokens.accessToken || (nk.tokens.lastRefresh && nk.tokens.lastRefresh >= (existing.tokens.lastRefresh || ''))) {
+            existing.tokens = nk.tokens;
+          }
+        }
+        if (nk.label && nk.label !== 'API Key') {
+          existing.label = nk.label;
+        }
+      } else {
+        // Missing key found -> add to memory
+        this.keys.push(nk);
+      }
+    }
+  }
 
-    // Search through candidate paths for existing valid data
+  init() {
+    // Read and merge keys from ALL available candidate file paths on disk
+    let loadedAny = false;
     for (const filePath of this.candidatePaths) {
       try {
         if (fs.existsSync(filePath)) {
           const raw = fs.readFileSync(filePath, 'utf8');
           const parsed = JSON.parse(raw);
           if (Array.isArray(parsed) && parsed.length > 0) {
-            loadedData = parsed;
-            console.log(`✅ [ApiKeyManager] Loaded ${parsed.length} keys from ${filePath}`);
-            break;
+            this.mergeKeys(parsed);
+            loadedAny = true;
+            console.log(`✅ [ApiKeyManager] Merged ${parsed.length} keys from ${filePath}`);
           }
         }
       } catch (e) {
@@ -55,10 +77,7 @@ class ApiKeyManager {
       }
     }
 
-    if (loadedData) {
-      this.keys = loadedData;
-      this.save(false); // save without triggering duplicate github push on boot
-    } else {
+    if (!loadedAny && this.keys.length === 0) {
       const defaultKey = {
         key: 'BRANN-DEMO-' + crypto.randomBytes(4).toString('hex').toUpperCase(),
         label: 'Demo User',
@@ -66,10 +85,12 @@ class ApiKeyManager {
         tokens: null
       };
       this.keys = [defaultKey];
-      this.save(false);
     }
 
-    // Try sync initial load from GitHub if remote repo has newer keys
+    // Save consolidated keys to all candidate paths
+    this.save(false);
+
+    // Fetch and merge keys from GitHub
     this.fetchFromGitHub();
   }
 
@@ -112,8 +133,9 @@ class ApiKeyManager {
         const content = Buffer.from(data.content, 'base64').toString('utf8');
         const parsed = JSON.parse(content);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          this.keys = parsed;
-          console.log(`✅ [ApiKeyManager] Synced ${parsed.length} database keys from GitHub (${repo})`);
+          const countBefore = this.keys.length;
+          this.mergeKeys(parsed);
+          console.log(`✅ [ApiKeyManager] Merged keys from GitHub (${repo}). Total keys in memory: ${this.keys.length}`);
           this.save(false);
         }
       }
