@@ -34,6 +34,9 @@ app.set('views', path.join(__dirname, 'views'));
     await tokenManager.setPassword(PASSWORD);
     console.log('✅ Admin password initialized (default|env).');
   }
+
+  // ⏱️ Mulai background auto-refresh loop untuk seluruh user API Keys (setiap 12 menit)
+  apiKeyManager.startAutoRefreshLoop(sdk, 12 * 60 * 1000);
 })();
 
 // ================= FUNGSI UPLOAD =================

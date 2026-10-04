@@ -266,6 +266,35 @@ class ApiKeyManager {
     const entry = this.getKey(key);
     return entry ? entry.tokens : null;
   }
+
+  startAutoRefreshLoop(sdk, intervalMs = 12 * 60 * 1000) {
+    if (this.refreshInterval) clearInterval(this.refreshInterval);
+
+    // Initial check after 30 seconds
+    setTimeout(() => this.refreshAllTokens(sdk), 30000);
+
+    this.refreshInterval = setInterval(() => this.refreshAllTokens(sdk), intervalMs);
+    console.log(`⏱️ [ApiKeyManager] Active background token refresh loop started (every ${intervalMs / 60000} mins)`);
+  }
+
+  async refreshAllTokens(sdk) {
+    if (!Array.isArray(this.keys) || this.keys.length === 0 || !sdk) return;
+
+    for (const k of this.keys) {
+      if (k && k.tokens && k.tokens.refreshToken) {
+        try {
+          console.log(`🔄 [AutoRefresh] Refreshing token for key ${k.key} (${k.label})...`);
+          const res = await sdk.refreshToken(k.tokens.refreshToken);
+          if (res?.data?.access_token) {
+            this.updateAccessToken(k.key, res.data.access_token);
+            console.log(`✅ [AutoRefresh] Token updated for key ${k.key}`);
+          }
+        } catch (e) {
+          console.warn(`⚠️ [AutoRefresh] Could not refresh token for key ${k.key}:`, e.message);
+        }
+      }
+    }
+  }
 }
 
 module.exports = new ApiKeyManager();
