@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>⚡ ALIGHT MOTION PRO — COMIC GENERATOR 💥</title>
-  <meta name="description" content="Website khusus Alight Motion Premium Generator dengan tema Pop-Art Komik super keren!">
+  <meta name="description" content="Website khusus Alight Motion Premium Generator dengan tema Pop-Art Komik super keren! Sedia Login User & Owner Panel.">
   <link rel="icon" type="image/png" href="/images/logo-192.png">
   
   <!-- Font Awesome Icons -->
@@ -26,6 +26,29 @@
         <button id="toggle-sound-btn" class="comic-btn-small" onclick="toggleSound()">
           <i class="fas fa-volume-up"></i> SFX: ON
         </button>
+
+        <!-- User & Auth Controls -->
+        <div id="auth-buttons-group" class="auth-buttons-group">
+          <button class="comic-btn-small" onclick="openModal('modal-login')" style="background: var(--comic-cyan);">
+            <i class="fas fa-sign-in-alt"></i> LOGIN
+          </button>
+          <button class="comic-btn-small" onclick="openModal('modal-register')" style="background: var(--comic-green);">
+            <i class="fas fa-user-plus"></i> DAFTAR
+          </button>
+          <button class="comic-btn-small" onclick="openModal('modal-owner-login')" style="background: var(--comic-pink); color: #fff;">
+            <i class="fas fa-crown"></i> OWNER
+          </button>
+        </div>
+
+        <div id="user-logged-group" class="user-logged-group" style="display: none;">
+          <span id="user-badge-name" class="user-badge-name"></span>
+          <button id="btn-owner-panel-trigger" class="comic-btn-small" onclick="openModal('modal-owner-panel')" style="display: none; background: var(--comic-yellow);">
+            <i class="fas fa-tools"></i> PANEL OWNER
+          </button>
+          <button class="comic-btn-small" onclick="handleLogout()" style="background: var(--comic-pink); color: #fff;">
+            <i class="fas fa-sign-out-alt"></i> LOGOUT
+          </button>
+        </div>
       </div>
     </div>
   </header>
@@ -53,7 +76,7 @@
     <!-- Live API Status Bar -->
     <div class="api-health-bar">
       <div id="health-dot" class="health-dot"></div>
-      <div id="health-status-text">MEMERIKSA STATUS SERVER RAILWAY API...</div>
+      <div id="health-status-text">MEMERIKSA STATUS SERVER ALIGHT MOTION...</div>
     </div>
 
     <!-- Generator Grid: Step 1 & Step 2 -->
@@ -127,60 +150,192 @@
 
     </section>
 
-    <!-- Axios Code Explorer Snippet Card -->
+    <!-- Axios Code Explorer Snippet Card (KODE PROXY AMAN TANPA MENUNJUKKAN API KEY SENSITIF) -->
     <section class="code-snippet-card">
       <div class="code-snippet-header">
         <div class="code-title">
-          <i class="fas fa-code" style="color: var(--comic-pink);"></i> NODE.JS / AXIOS API CODE INTEGRATION
+          <i class="fas fa-code" style="color: var(--comic-pink);"></i> NODE.JS / AXIOS API INTEGRATION
         </div>
         <button class="comic-btn-small" onclick="copySnippetCode()" style="background: var(--comic-green);">
           <i class="fas fa-copy"></i> COPY CODE
         </button>
       </div>
       <p style="color: #BBB; margin-bottom: 1rem; font-size: 0.95rem;">
-        Contoh kode Node.js menggunakan <b>axios</b> untuk integrasi langsung ke Railway API Bot Premium:
+        Contoh pemanggilan API Generator Alight Motion secara aman lewat backend proxy Node.js:
       </p>
       <pre class="code-pre" id="snippet-code-text"><code>const axios = require('axios');
 
-const API_KEY = 'Codex-D1FAF918-419CB645-93B44EEA-58A4EFB5';
-const BASE_URL = 'https://brann-alight-motion-2-production.up.railway.app/api/v1/bot-premium';
-const headers = { 'x-api-key': API_KEY };
+// Web Proxy Endpoint (API Key disimpan aman di backend)
+const BASE_URL = 'https://your-domain.com/api';
 
-async function callApi() {
+async function generateAlightMotion() {
   try {
-    // 1. Kirim Magic Link ke Email Target
-    const sendLink = await axios.post(
-      `${BASE_URL}/send-link`,
-      { email: 'target@email.com' },
-      { headers }
-    );
-    console.log('Send Link:', sendLink.data);
+    // 1. Kirim Magic Link ke Target Email
+    const sendLink = await axios.post(`${BASE_URL}/send-link`, {
+      email: 'target@email.com'
+    });
+    console.log('Send Link Result:', sendLink.data);
 
     // 2. Aktivasi Lisensi Premium dengan Magic Link
-    const activate = await axios.post(
-      `${BASE_URL}/activate`,
-      {
-        email: 'target@email.com',
-        magicLink: 'https://alightcreative.com/...'
-      },
-      { headers }
-    );
-    console.log('Activate:', activate.data);
+    const activate = await axios.post(`${BASE_URL}/activate`, {
+      email: 'target@email.com',
+      magicLink: 'https://alightcreative.com/...'
+    });
+    console.log('Activate Result:', activate.data);
   } catch (error) {
     console.error('API Error:', error.response?.data || error.message);
   }
 }
 
-callApi();</code></pre>
+generateAlightMotion();</code></pre>
     </section>
 
   </main>
+
+  <!-- ==========================================================================
+       COMIC MODALS (LOGIN, REGISTER, OWNER LOGIN & OWNER PANEL)
+       ========================================================================== -->
+
+  <!-- Modal Login User -->
+  <div id="modal-login" class="comic-modal-overlay">
+    <div class="comic-modal-box">
+      <button class="modal-close-btn" onclick="closeModal('modal-login')">&times;</button>
+      <div class="modal-badge">HERO LOGIN</div>
+      <h3 class="modal-title"><i class="fas fa-user"></i> LOGIN AKUN HERO</h3>
+      
+      <form id="form-login-user">
+        <div class="form-group">
+          <label class="form-label">USERNAME:</label>
+          <input type="text" id="login-username" class="comic-input" placeholder="Masukkan username" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">PASSWORD:</label>
+          <input type="password" id="login-password" class="comic-input" placeholder="Masukkan password" required>
+        </div>
+        <button type="submit" class="comic-btn-primary">
+          <i class="fas fa-sign-in-alt"></i> MASUK SEKARANG
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Daftar User -->
+  <div id="modal-register" class="comic-modal-overlay">
+    <div class="comic-modal-box">
+      <button class="modal-close-btn" onclick="closeModal('modal-register')">&times;</button>
+      <div class="modal-badge" style="background: var(--comic-green);">JOIN HEROES</div>
+      <h3 class="modal-title"><i class="fas fa-user-plus"></i> DAFTAR AKUN BARU</h3>
+      
+      <form id="form-register-user">
+        <div class="form-group">
+          <label class="form-label">USERNAME:</label>
+          <input type="text" id="reg-username" class="comic-input" placeholder="Buat username unik" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">EMAIL:</label>
+          <input type="email" id="reg-email" class="comic-input" placeholder="email@domain.com" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">PASSWORD:</label>
+          <input type="password" id="reg-password" class="comic-input" placeholder="Buat password rahasia" required>
+        </div>
+        <button type="submit" class="comic-btn-primary" style="background: var(--comic-green);">
+          <i class="fas fa-check-circle"></i> DAFTAR AKUN HERO
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Login Owner -->
+  <div id="modal-owner-login" class="comic-modal-overlay">
+    <div class="comic-modal-box" style="border-color: var(--comic-pink);">
+      <button class="modal-close-btn" onclick="closeModal('modal-owner-login')">&times;</button>
+      <div class="modal-badge" style="background: var(--comic-pink); color: #fff;">OWNER ONLY</div>
+      <h3 class="modal-title"><i class="fas fa-crown" style="color: var(--comic-yellow);"></i> LOGIN OWNER SUPREME</h3>
+      
+      <form id="form-owner-login">
+        <div class="form-group">
+          <label class="form-label">OWNER USERNAME:</label>
+          <input type="text" id="owner-login-user" class="comic-input" value="owner" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">OWNER PASSWORD:</label>
+          <input type="password" id="owner-login-pass" class="comic-input" placeholder="Masukkan password owner" required>
+        </div>
+        <button type="submit" class="comic-btn-primary comic-btn-danger">
+          <i class="fas fa-key"></i> MASUK PANEL OWNER
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Panel Owner (FITUR LENGKAP & GANTI API KEY ALIGHT MOTION) -->
+  <div id="modal-owner-panel" class="comic-modal-overlay">
+    <div class="comic-modal-box modal-large" style="border-color: var(--comic-yellow);">
+      <button class="modal-close-btn" onclick="closeModal('modal-owner-panel')">&times;</button>
+      <div class="modal-badge" style="background: var(--comic-yellow); color: #000;">OWNER CONTROL CENTER</div>
+      <h3 class="modal-title"><i class="fas fa-tools"></i> PANEL CONTROL SUPREME OWNER 👑</h3>
+
+      <div class="owner-grid">
+        
+        <!-- CARD 1: FORM GANTI API KEY & URL ALIGHT MOTION -->
+        <div class="owner-card">
+          <h4><i class="fas fa-key" style="color: var(--comic-pink);"></i> GANTI API KEY ALIGHT MOTION</h4>
+          <p class="owner-card-desc">Ubah API Key & Base URL Railway AM yang digunakan oleh sistem secara instan.</p>
+          
+          <form id="form-update-apikey">
+            <div class="form-group">
+              <label class="form-label">API KEY AM BARU:</label>
+              <input type="text" id="owner-input-apikey" class="comic-input" placeholder="Masukkan API Key AM Baru" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">BASE URL RAILWAY AM:</label>
+              <input type="text" id="owner-input-baseurl" class="comic-input" placeholder="https://...railway.app/api/v1/bot-premium" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">PASSWORD OWNER BARU (OPSIONAL):</label>
+              <input type="password" id="owner-input-newpass" class="comic-input" placeholder="Biarkan kosong jika tidak diganti">
+            </div>
+            <button type="submit" class="comic-btn-primary">
+              <i class="fas fa-save"></i> SIMPAN & UPDATE API KEY!
+            </button>
+          </form>
+        </div>
+
+        <!-- CARD 2: GITHUB DATABASE AUTO-SYNC STATUS & MANUAL PUSH -->
+        <div class="owner-card">
+          <h4><i class="fab fa-github" style="color: var(--comic-cyan);"></i> GITHUB DATABASE AUTO-SYNC</h4>
+          <p class="owner-card-desc">DATABASE (users.json, config.json, logs.json) secara otomatis di-push ke GitHub repository!</p>
+
+          <div style="background: #111; color: #00FF66; padding: 1rem; border: 2px solid #000; font-family: monospace; font-size: 0.85rem; margin-bottom: 1rem;">
+            <div>STATUS: <span id="github-sync-status" style="color: var(--comic-yellow);">● AUTO-SYNC ACTIVE</span></div>
+            <div>REPO: <span style="color: #fff;">gibranadzhar/Brannmotiom</span></div>
+            <div>FILES: <span style="color: #fff;">data/users.json, data/config.json, data/logs.json</span></div>
+          </div>
+
+          <button type="button" class="comic-btn-primary" style="background: var(--comic-cyan);" onclick="triggerManualGithubSync()">
+            <i class="fab fa-github"></i> FORCE SYNC DATABASE TO GITHUB NOW!
+          </button>
+        </div>
+
+      </div>
+
+      <!-- SYSTEM LOGS VIEWER -->
+      <div style="margin-top: 2rem;">
+        <h4><i class="fas fa-history" style="color: var(--comic-green);"></i> SYSTEM ACTIVITY & USER LOGS</h4>
+        <div class="logs-console-box">
+          <pre id="owner-logs-box">Memuat riwayat aktivitas sistem...</pre>
+        </div>
+      </div>
+
+    </div>
+  </div>
 
   <!-- Comic Footer -->
   <footer class="comic-footer">
     <p>⚡ BRANN ALIGHT MOTION GENERATOR — POP-ART COMIC EDITION 💥</p>
     <p style="margin-top: 0.4rem; font-size: 0.8rem; color: #555;">
-      Powered by Railway Engine API | Dedicated Alight Motion Creator
+      Powered by Dedicated Engine API | Hidden Credentials Security Protected
     </p>
   </footer>
 

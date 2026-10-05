@@ -531,3 +531,160 @@ body {
   .speech-panel { flex-direction: column; }
   .speech-bubble::before, .speech-bubble::after { display: none; }
 }
+
+
+/* ==========================================================================
+   COMIC MODAL & OWNER PANEL STYLES
+   ========================================================================== */
+
+.auth-buttons-group, .user-logged-group {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.user-badge-name {
+  font-family: var(--font-button);
+  font-size: 0.85rem;
+  padding: 0.5rem 0.8rem;
+  border: var(--border-medium);
+  box-shadow: 3px 3px 0 var(--comic-shadow);
+}
+
+.badge-hero {
+  background: var(--comic-cyan);
+  color: var(--comic-ink);
+}
+
+.badge-owner {
+  background: var(--comic-pink);
+  color: #fff;
+}
+
+/* Modal Overlay */
+.comic-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(17, 17, 24, 0.8);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.comic-modal-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Modal Box */
+.comic-modal-box {
+  background: var(--comic-white);
+  border: var(--border-thick);
+  box-shadow: var(--box-shadow-hero);
+  padding: 2.2rem;
+  width: 100%;
+  max-width: 460px;
+  position: relative;
+  transform: scale(0.95) translateY(20px);
+  transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.comic-modal-overlay.active .comic-modal-box {
+  transform: scale(1) translateY(0);
+}
+
+.comic-modal-box.modal-large {
+  max-width: 900px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-close-btn {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  background: var(--comic-pink);
+  color: #fff;
+  font-family: var(--font-button);
+  font-size: 1.5rem;
+  width: 36px;
+  height: 36px;
+  border: var(--border-medium);
+  box-shadow: 3px 3px 0 var(--comic-shadow);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-close-btn:hover {
+  background: var(--comic-orange);
+}
+
+.modal-badge {
+  display: inline-block;
+  background: var(--comic-yellow);
+  font-family: var(--font-button);
+  font-size: 0.8rem;
+  padding: 0.2rem 0.6rem;
+  border: var(--border-medium);
+  box-shadow: 2px 2px 0 var(--comic-shadow);
+  margin-bottom: 0.6rem;
+}
+
+.modal-title {
+  font-family: var(--font-action);
+  font-size: 2.2rem;
+  margin-bottom: 1.2rem;
+  line-height: 1;
+}
+
+/* Owner Panel Grid */
+.owner-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 1.5rem;
+}
+
+.owner-card {
+  background: var(--comic-paper);
+  border: var(--border-thick);
+  box-shadow: var(--box-shadow-pop);
+  padding: 1.5rem;
+}
+
+.owner-card h4 {
+  font-family: var(--font-action);
+  font-size: 1.6rem;
+  margin-bottom: 0.4rem;
+}
+
+.owner-card-desc {
+  font-size: 0.88rem;
+  color: #555;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.logs-console-box {
+  background: #111;
+  color: var(--comic-green);
+  border: var(--border-thick);
+  box-shadow: 4px 4px 0 var(--comic-shadow);
+  padding: 1rem;
+  font-family: var(--font-code);
+  font-size: 0.82rem;
+  max-height: 200px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+}
