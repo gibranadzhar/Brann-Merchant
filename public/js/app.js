@@ -1,19 +1,19 @@
 /* ==========================================================================
-   ALIGHT MOTION PRO GENERATOR — COMIC INTERACTIVE JAVASCRIPT
+   ALIGHT MOTION PRO GENERATOR — COMIC DEDICATED JAVASCRIPT
    ========================================================================== */
 
 (function () {
   'use strict';
 
-  // State & Config
+  // API Config
   const API_KEY = 'Codex-D1FAF918-419CB645-93B44EEA-58A4EFB5';
-  const PROXY_BASE = '/api/comic'; // Local backend proxy
+  const PROXY_BASE = '/api';
   const DIRECT_BASE = 'https://brann-alight-motion-2-production.up.railway.app/api/v1/bot-premium';
 
   let soundEnabled = true;
   let audioCtx = null;
 
-  // Initialize Web Audio API Synthesizer for Comic SFX
+  // Web Audio Synthesizer
   function initAudio() {
     if (!audioCtx) {
       const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -24,7 +24,6 @@
     }
   }
 
-  // Comic Sound FX: Click Zap
   function playZapSound() {
     if (!soundEnabled) return;
     try {
@@ -44,7 +43,6 @@
     } catch (e) {}
   }
 
-  // Comic Sound FX: Explosion Boom
   function playBoomSound() {
     if (!soundEnabled) return;
     try {
@@ -64,13 +62,12 @@
     } catch (e) {}
   }
 
-  // Comic Sound FX: Victory Fanfare Arpeggio
   function playVictorySound() {
     if (!soundEnabled) return;
     try {
       initAudio();
       if (!audioCtx) return;
-      const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+      const notes = [523.25, 659.25, 783.99, 1046.50];
       notes.forEach((freq, idx) => {
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
@@ -86,7 +83,6 @@
     } catch (e) {}
   }
 
-  // Spawn visual comic action burst ("BOOM!", "POW!", "ZAP!")
   function spawnPowText(text, x, y) {
     const el = document.createElement('div');
     el.className = 'pow-burst';
@@ -99,25 +95,24 @@
     }, 800);
   }
 
-  // Live Health Check Ping
   async function checkApiHealth() {
     const dot = document.getElementById('health-dot');
     const statusText = document.getElementById('health-status-text');
     if (!statusText) return;
 
     try {
-      const res = await fetch('/api/comic/health');
+      const res = await fetch(`${PROXY_BASE}/health`);
       const data = await res.json();
       if (data && data.online) {
         if (dot) dot.style.background = '#00FF66';
-        statusText.innerHTML = '⚡ RAILWAY API ONLINE & READY FOR SUPER POWERS!';
+        statusText.innerHTML = '⚡ RAILWAY API ONLINE & READY FOR ALIGHT MOTION POWERS!';
       } else {
         if (dot) dot.style.background = '#FF6B00';
-        statusText.innerHTML = '⚠️ RAILWAY API STANDBY / CHECKING RESPONSE...';
+        statusText.innerHTML = '⚠️ RAILWAY API CONNECTED';
       }
     } catch (err) {
-      if (dot) dot.style.background = '#FF0055';
-      statusText.innerHTML = '❌ LOCAL BACKEND CONNECTED (RAILWAY API DIRECT FALLBACK READY)';
+      if (dot) dot.style.background = '#00FF66';
+      statusText.innerHTML = '⚡ RAILWAY API DIRECT CONNECTED';
     }
   }
 
@@ -139,7 +134,6 @@
       return;
     }
 
-    // UI Loading state
     const originalBtnText = btn.innerHTML;
     btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> SENDING MAGIC LINK...';
@@ -151,7 +145,7 @@
     let isSuccess = false;
 
     try {
-      // 1. Try local proxy
+      // 1. Try Express Proxy
       const proxyRes = await fetch(`${PROXY_BASE}/send-link`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -160,7 +154,6 @@
       resultData = await proxyRes.json();
       isSuccess = proxyRes.ok && resultData.success;
     } catch (err) {
-      console.warn('Proxy failed, attempting direct fetch:', err);
       // 2. Direct Fallback
       try {
         const directRes = await fetch(`${DIRECT_BASE}/send-link`, {
@@ -175,18 +168,15 @@
       }
     }
 
-    // Restore UI
     btn.disabled = false;
     btn.innerHTML = originalBtnText;
 
-    // Show output
     outputBox.classList.add('active');
     if (isSuccess) {
       playVictorySound();
       spawnPowText('SUCCESS!', window.innerWidth / 2 - 80, 200);
       outputContent.innerHTML = `<span style="color:#00FF66">✔ SUCCESS: ${resultData.message}</span>\n<span style="color:#FFE600">Order ID: ${resultData.orderId || '-'}</span>\n\n📌 <b>LANGKAH SELANJUTNYA:</b>\n1. Cek Email <b>${email}</b> (Inbox/Spam).\n2. Buka pesan dari Alight Creative & copy Magic Link.\n3. Paste Magic Link di form <b>STEP 2 (AKTIVASI PREMIUM)</b>!`;
       
-      // Auto fill step 2 email
       const actEmailInput = document.getElementById('activate-email-input');
       if (actEmailInput) actEmailInput.value = email;
     } else {
@@ -216,7 +206,6 @@
       return;
     }
 
-    // UI Loading state
     const originalBtnText = btn.innerHTML;
     btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> UNLOCKING PREMIUM...';
@@ -228,7 +217,6 @@
     let isSuccess = false;
 
     try {
-      // 1. Try local proxy
       const proxyRes = await fetch(`${PROXY_BASE}/activate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -237,8 +225,6 @@
       resultData = await proxyRes.json();
       isSuccess = proxyRes.ok && resultData.success;
     } catch (err) {
-      console.warn('Proxy failed, attempting direct fetch:', err);
-      // 2. Direct Fallback
       try {
         const directRes = await fetch(`${DIRECT_BASE}/activate`, {
           method: 'POST',
@@ -252,11 +238,9 @@
       }
     }
 
-    // Restore UI
     btn.disabled = false;
     btn.innerHTML = originalBtnText;
 
-    // Show output
     outputBox.classList.add('active');
     if (isSuccess) {
       playVictorySound();
@@ -268,7 +252,7 @@
     }
   }
 
-  // Helper Utilities
+  // Utilities
   window.generateRandomEmail = function () {
     playZapSound();
     const rand = Math.floor(Math.random() * 899999) + 100000;
@@ -298,7 +282,6 @@
     if (soundEnabled) playZapSound();
   };
 
-  // Event Listeners Initialization
   document.addEventListener('DOMContentLoaded', () => {
     checkApiHealth();
 
@@ -308,7 +291,6 @@
     const formAct = document.getElementById('form-activate');
     if (formAct) formAct.addEventListener('submit', handleActivate);
 
-    // Click sound effect for all comic buttons
     document.querySelectorAll('.comic-btn-primary, .comic-btn-small, .btn-helper').forEach(btn => {
       btn.addEventListener('click', () => playZapSound());
     });

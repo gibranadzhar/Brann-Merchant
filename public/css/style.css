@@ -1,5 +1,5 @@
 /* ==========================================================================
-   ALIGHT MOTION PRO GENERATOR — POP-ART COMIC THEME STYLESHEET
+   ALIGHT MOTION PRO GENERATOR — POP-ART COMIC DEDICATED STYLESHEET
    ========================================================================== */
 
 @import url('https://fonts.googleapis.com/css2?family=Bangers&family=Bungee&family=Outfit:wght@400;600;800;900&family=JetBrains+Mono:wght@500;700&display=swap');
@@ -363,7 +363,6 @@ body {
   box-shadow: 6px 6px 0 var(--comic-shadow);
 }
 
-/* Helper Buttons */
 .input-helpers {
   display: flex;
   gap: 0.5rem;
@@ -385,7 +384,6 @@ body {
   background: var(--comic-cyan);
 }
 
-/* Action Buttons */
 .comic-btn-primary {
   width: 100%;
   font-family: var(--font-button);
@@ -424,7 +422,6 @@ body {
   background: var(--comic-orange);
 }
 
-/* Output Console Box */
 .output-box {
   margin-top: 1.5rem;
   background: var(--comic-ink);
@@ -461,7 +458,6 @@ body {
   justify-content: space-between;
 }
 
-/* Axios Code Snippet Viewer */
 .code-snippet-card {
   background: var(--comic-ink);
   color: #F8F8F2;
@@ -502,7 +498,6 @@ body {
   color: #A6E3A1;
 }
 
-/* Sound Effect Floating Visual */
 .pow-burst {
   position: fixed;
   pointer-events: none;
@@ -520,7 +515,6 @@ body {
   100% { opacity: 0; transform: scale(1.8) translateY(-40px) rotate(-5deg); }
 }
 
-/* Footer */
 .comic-footer {
   text-align: center;
   padding: 2rem 1rem;
@@ -531,12 +525,6 @@ body {
   box-shadow: 0 -4px 0 var(--comic-shadow);
 }
 
-.comic-footer a {
-  color: var(--comic-pink);
-  text-decoration: underline;
-}
-
-/* Responsive adjust */
 @media (max-width: 768px) {
   .hero-heading { font-size: 2.4rem; }
   .comic-title-main { font-size: 1.8rem; }

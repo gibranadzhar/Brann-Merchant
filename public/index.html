@@ -4,14 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>⚡ ALIGHT MOTION PRO — COMIC GENERATOR 💥</title>
-  <meta name="description" content="Website Alight Motion Generator dengan tema Pop-Art Komik super keren! Power up akun kamu secara instan.">
+  <meta name="description" content="Website khusus Alight Motion Premium Generator dengan tema Pop-Art Komik super keren!">
   <link rel="icon" type="image/png" href="/images/logo-192.png">
   
   <!-- Font Awesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <!-- Comic Stylesheet -->
-  <link rel="stylesheet" href="/css/comic.css">
+  <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
 
@@ -26,9 +26,6 @@
         <button id="toggle-sound-btn" class="comic-btn-small" onclick="toggleSound()">
           <i class="fas fa-volume-up"></i> SFX: ON
         </button>
-        <a href="/home.html" class="comic-btn-small" style="background: var(--comic-yellow);">
-          <i class="fas fa-desktop"></i> DASHBOARD
-        </a>
       </div>
     </div>
   </header>
@@ -40,14 +37,14 @@
     <section class="hero-comic-card">
       <div class="hero-sunburst"></div>
       <div class="hero-content">
-        <div class="comic-tagline">⚡ POWERED BY BRANN CODEX API ⚡</div>
-        <h2 class="hero-heading">SUPERCHARGED ALIGHT MOTION GENERATOR! 💥</h2>
+        <div class="comic-tagline">⚡ DEDICATED ALIGHT MOTION PREMIUM GENERATOR ⚡</div>
+        <h2 class="hero-heading">CREATE ALIGHT MOTION PREMIUM! 💥</h2>
         
         <div class="speech-panel">
           <div class="mascot-avatar">⚡</div>
           <div class="speech-bubble">
             <b>CAPTAIN ALIGHT SAYS:</b><br>
-            "Halo Hero! Butuh akun Alight Motion Premium tanpa watermark? Masukkan email target di <b>STEP 1</b> untuk kirim Magic Link, lalu paste link verifikasi di <b>STEP 2</b> untuk Unlock Super Powers!"
+            "Selamat datang Hero! Masukkan email target di <b>STEP 1</b> untuk kirim Magic Link, lalu paste link verifikasi di <b>STEP 2</b> untuk Unlock Alight Motion Pro Premium secara otomatis!"
           </div>
         </div>
       </div>
@@ -68,7 +65,7 @@
         <h3 class="card-title">
           <i class="fas fa-paper-plane" style="color: var(--comic-pink);"></i> REQUEST LINK ⚡
         </h3>
-        <p class="card-desc">Kirim Magic Link verifikasi Alight Motion ke email target secara otomatis.</p>
+        <p class="card-desc">Kirim Magic Link verifikasi Alight Motion ke email target secara instan.</p>
 
         <form id="form-send-link">
           <div class="form-group">
@@ -77,7 +74,7 @@
             
             <div class="input-helpers">
               <button type="button" class="btn-helper" onclick="generateRandomEmail()">🎲 Random Email</button>
-              <button type="button" class="btn-helper" onclick="document.getElementById('send-email-input').value='user' + Math.floor(Math.random()*9000+1000) + '@gmail.com'">📧 @gmail.com</button>
+              <button type="button" class="btn-helper" onclick="document.getElementById('send-email-input').value='hero' + Math.floor(Math.random()*9000+1000) + '@gmail.com'">📧 @gmail.com</button>
             </div>
           </div>
 
@@ -101,7 +98,7 @@
         <h3 class="card-title">
           <i class="fas fa-key" style="color: var(--comic-cyan);"></i> ACTIVATE POWERS 💥
         </h3>
-        <p class="card-desc">Aktivasi akun Alight Motion menjadi Premium setelah mendapatkan Magic Link.</p>
+        <p class="card-desc">Aktivasi akun Alight Motion menjadi Premium menggunakan Magic Link yang diterima.</p>
 
         <form id="form-activate">
           <div class="form-group">
@@ -134,14 +131,14 @@
     <section class="code-snippet-card">
       <div class="code-snippet-header">
         <div class="code-title">
-          <i class="fas fa-code" style="color: var(--comic-pink);"></i> NODE.JS / AXIOS API INTEGRATION CODE
+          <i class="fas fa-code" style="color: var(--comic-pink);"></i> NODE.JS / AXIOS API CODE INTEGRATION
         </div>
         <button class="comic-btn-small" onclick="copySnippetCode()" style="background: var(--comic-green);">
           <i class="fas fa-copy"></i> COPY CODE
         </button>
       </div>
       <p style="color: #BBB; margin-bottom: 1rem; font-size: 0.95rem;">
-        Berikut adalah contoh kode Node.js menggunakan <b>axios</b> untuk integrasi langsung ke Railway Bot Premium API:
+        Contoh kode Node.js menggunakan <b>axios</b> untuk integrasi langsung ke Railway API Bot Premium:
       </p>
       <pre class="code-pre" id="snippet-code-text"><code>const axios = require('axios');
 
@@ -181,13 +178,13 @@ callApi();</code></pre>
 
   <!-- Comic Footer -->
   <footer class="comic-footer">
-    <p>⚡ BRANNMOTION — SUPER POP-ART COMIC GENERATOR EDITION 💥</p>
+    <p>⚡ BRANN ALIGHT MOTION GENERATOR — POP-ART COMIC EDITION 💥</p>
     <p style="margin-top: 0.4rem; font-size: 0.8rem; color: #555;">
-      Powered by Railway Engine API | Built with Pop-Art Comic Styling
+      Powered by Railway Engine API | Dedicated Alight Motion Creator
     </p>
   </footer>
 
   <!-- Script -->
-  <script src="/js/comic.js"></script>
+  <script src="/js/app.js"></script>
 </body>
 </html>
