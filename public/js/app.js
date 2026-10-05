@@ -1,5 +1,5 @@
 /* ==========================================================================
-   ALIGHT MOTION PRO GENERATOR — COMIC DEDICATED JAVASCRIPT
+   ALIGHT MOTION PRO GENERATOR — UNIFIED AUTH & DEDICATED JAVASCRIPT
    ========================================================================== */
 
 (function () {
@@ -93,7 +93,28 @@
     }, 800);
   }
 
-  // Modal Control Utilities
+  // Auth Tab Switcher (Login / Register Card)
+  window.showAuthTab = function (tabName) {
+    playZapSound();
+    const tabLogin = document.getElementById('tab-btn-login');
+    const tabReg = document.getElementById('tab-btn-register');
+    const panelLogin = document.getElementById('auth-panel-login');
+    const panelReg = document.getElementById('auth-panel-register');
+
+    if (tabName === 'login') {
+      if (tabLogin) tabLogin.classList.add('active');
+      if (tabReg) tabReg.classList.remove('active');
+      if (panelLogin) panelLogin.classList.add('active');
+      if (panelReg) panelReg.classList.remove('active');
+    } else {
+      if (tabReg) tabReg.classList.add('active');
+      if (tabLogin) tabLogin.classList.remove('active');
+      if (panelReg) panelReg.classList.add('active');
+      if (panelLogin) panelLogin.classList.remove('active');
+    }
+  };
+
+  // Modal Controls
   window.openModal = function (modalId) {
     playZapSound();
     const modal = document.getElementById(modalId);
@@ -110,27 +131,43 @@
     if (modal) modal.classList.remove('active');
   };
 
-  // Update UI sesua status Auth User / Owner
+  // Auth View Gating (Update UI Sesuai Status Login)
   function updateAuthUI() {
-    const authBtns = document.getElementById('auth-buttons-group');
+    const guestLanding = document.getElementById('view-guest-landing');
+    const userDashboard = document.getElementById('view-user-dashboard');
+    const authGuestControls = document.getElementById('auth-guest-controls');
     const userGroup = document.getElementById('user-logged-group');
     const userBadge = document.getElementById('user-badge-name');
     const btnOwnerPanel = document.getElementById('btn-owner-panel-trigger');
+    const mascotGreeting = document.getElementById('mascot-user-greeting');
 
     if (currentUser) {
-      if (authBtns) authBtns.style.display = 'none';
+      // 1. Tampilkan Dashboard Generator & Sembunyikan Landing Wall
+      if (guestLanding) guestLanding.style.display = 'none';
+      if (userDashboard) userDashboard.style.display = 'block';
+
+      if (authGuestControls) authGuestControls.style.display = 'none';
       if (userGroup) userGroup.style.display = 'flex';
+
+      const isOwner = currentUser.role === 'owner';
       if (userBadge) {
-        const isOwner = currentUser.role === 'owner';
         userBadge.innerHTML = isOwner ? `👑 OWNER: <b>${currentUser.username}</b>` : `⚡ HERO: <b>${currentUser.username}</b>`;
         userBadge.className = isOwner ? 'user-badge-name badge-owner' : 'user-badge-name badge-hero';
       }
 
       if (btnOwnerPanel) {
-        btnOwnerPanel.style.display = (currentUser.role === 'owner') ? 'inline-flex' : 'none';
+        btnOwnerPanel.style.display = isOwner ? 'inline-flex' : 'none';
+      }
+
+      if (mascotGreeting) {
+        mascotGreeting.innerHTML = isOwner ? `WELCOME BACK SUPREME OWNER 👑 (${currentUser.username.toUpperCase()}):` : `WELCOME BACK HERO ⚡ (${currentUser.username.toUpperCase()}):`;
       }
     } else {
-      if (authBtns) authBtns.style.display = 'flex';
+      // 2. Kunci Fitur & Tampilkan Landing Wall Auth
+      if (guestLanding) guestLanding.style.display = 'block';
+      if (userDashboard) userDashboard.style.display = 'none';
+
+      if (authGuestControls) authGuestControls.style.display = 'flex';
       if (userGroup) userGroup.style.display = 'none';
     }
   }
@@ -171,6 +208,11 @@
   // Handle Send Link Form Submit
   async function handleSendLink(e) {
     e.preventDefault();
+    if (!currentUser) {
+      alert('⚡ Harap Login terlebih dahulu untuk menggunakan fitur Generator!');
+      return;
+    }
+
     initAudio();
     playBoomSound();
 
@@ -228,6 +270,11 @@
   // Handle Activate Premium Form Submit
   async function handleActivate(e) {
     e.preventDefault();
+    if (!currentUser) {
+      alert('⚡ Harap Login terlebih dahulu untuk menggunakan fitur Generator!');
+      return;
+    }
+
     initAudio();
     playBoomSound();
 
@@ -283,11 +330,11 @@
   }
 
   /* ==========================================================================
-     AUTH HANDLERS (USER LOGIN, REGISTER, OWNER LOGIN)
+     UNIFIED AUTH HANDLER (DISAMAKAN LOGIN USER & OWNER)
      ========================================================================== */
 
-  // Form User Login
-  async function handleUserLogin(e) {
+  // Single Unified Form Login (User & Owner)
+  async function handleUnifiedLogin(e) {
     e.preventDefault();
     const username = document.getElementById('login-username').value.trim();
     const password = document.getElementById('login-password').value.trim();
@@ -302,14 +349,15 @@
       if (res.ok && data.success) {
         currentUser = data.user;
         localStorage.setItem('am_user', JSON.stringify(currentUser));
+        
         if (currentUser.role === 'owner') {
           ownerSecret = password;
           localStorage.setItem('am_owner_secret', ownerSecret);
         }
+
         updateAuthUI();
-        closeModal('modal-login');
         playVictorySound();
-        spawnPowText('WELCOME!', window.innerWidth / 2, 200);
+        spawnPowText(currentUser.role === 'owner' ? 'OWNER MODE!' : 'WELCOME!', window.innerWidth / 2, 200);
         alert(data.message);
       } else {
         alert('❌ Login Gagal: ' + data.message);
@@ -319,8 +367,8 @@
     }
   }
 
-  // Form User Register
-  async function handleUserRegister(e) {
+  // Unified Form Register
+  async function handleUnifiedRegister(e) {
     e.preventDefault();
     const username = document.getElementById('reg-username').value.trim();
     const email = document.getElementById('reg-email').value.trim();
@@ -337,7 +385,6 @@
         currentUser = data.user;
         localStorage.setItem('am_user', JSON.stringify(currentUser));
         updateAuthUI();
-        closeModal('modal-register');
         playVictorySound();
         spawnPowText('REGISTERED!', window.innerWidth / 2, 200);
         alert(data.message);
@@ -346,37 +393,6 @@
       }
     } catch (err) {
       alert('Error register: ' + err.message);
-    }
-  }
-
-  // Form Owner Login
-  async function handleOwnerLogin(e) {
-    e.preventDefault();
-    const username = document.getElementById('owner-login-user').value.trim();
-    const password = document.getElementById('owner-login-pass').value.trim();
-
-    try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
-      });
-      const data = await res.json();
-      if (res.ok && data.success && data.user.role === 'owner') {
-        currentUser = data.user;
-        ownerSecret = password;
-        localStorage.setItem('am_user', JSON.stringify(currentUser));
-        localStorage.setItem('am_owner_secret', ownerSecret);
-        updateAuthUI();
-        closeModal('modal-owner-login');
-        openModal('modal-owner-panel');
-        playVictorySound();
-        spawnPowText('OWNER MODE!', window.innerWidth / 2, 200);
-      } else {
-        alert('❌ Login Owner Gagal: Password atau Username Owner Salah!');
-      }
-    } catch (err) {
-      alert('Error login owner: ' + err.message);
     }
   }
 
@@ -477,15 +493,6 @@
     spawnPowText('GENERATED!', window.innerWidth / 2, 300);
   };
 
-  window.copySnippetCode = function () {
-    playZapSound();
-    const codeText = document.getElementById('snippet-code-text').innerText;
-    navigator.clipboard.writeText(codeText).then(() => {
-      spawnPowText('COPIED!', window.innerWidth / 2, 400);
-      alert('⚡ Kode Node.js / Axios berhasil disalin ke clipboard!');
-    });
-  };
-
   window.toggleSound = function () {
     soundEnabled = !soundEnabled;
     const btn = document.getElementById('toggle-sound-btn');
@@ -505,15 +512,12 @@
     const formAct = document.getElementById('form-activate');
     if (formAct) formAct.addEventListener('submit', handleActivate);
 
-    // Auth Forms
-    const formLogin = document.getElementById('form-login-user');
-    if (formLogin) formLogin.addEventListener('submit', handleUserLogin);
+    // Single Unified Auth Forms
+    const formLogin = document.getElementById('form-login-unified');
+    if (formLogin) formLogin.addEventListener('submit', handleUnifiedLogin);
 
-    const formReg = document.getElementById('form-register-user');
-    if (formReg) formReg.addEventListener('submit', handleUserRegister);
-
-    const formOwnerLogin = document.getElementById('form-owner-login');
-    if (formOwnerLogin) formOwnerLogin.addEventListener('submit', handleOwnerLogin);
+    const formReg = document.getElementById('form-register-unified');
+    if (formReg) formReg.addEventListener('submit', handleUnifiedRegister);
 
     const formUpdateApi = document.getElementById('form-update-apikey');
     if (formUpdateApi) formUpdateApi.addEventListener('submit', handleUpdateApiKey);

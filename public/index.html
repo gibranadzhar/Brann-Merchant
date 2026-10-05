@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>⚡ ALIGHT MOTION PRO — COMIC GENERATOR 💥</title>
-  <meta name="description" content="Website khusus Alight Motion Premium Generator dengan tema Pop-Art Komik super keren! Sedia Login User & Owner Panel.">
+  <meta name="description" content="Website Alight Motion Premium Generator Pop-Art Komik super keren!">
   <link rel="icon" type="image/png" href="/images/logo-192.png">
   
   <!-- Font Awesome Icons -->
@@ -27,23 +27,21 @@
           <i class="fas fa-volume-up"></i> SFX: ON
         </button>
 
-        <!-- User & Auth Controls -->
-        <div id="auth-buttons-group" class="auth-buttons-group">
-          <button class="comic-btn-small" onclick="openModal('modal-login')" style="background: var(--comic-cyan);">
+        <!-- Guest Controls (Saat Belum Login) -->
+        <div id="auth-guest-controls" class="auth-buttons-group">
+          <button class="comic-btn-small" onclick="showAuthTab('login')" style="background: var(--comic-cyan);">
             <i class="fas fa-sign-in-alt"></i> LOGIN
           </button>
-          <button class="comic-btn-small" onclick="openModal('modal-register')" style="background: var(--comic-green);">
+          <button class="comic-btn-small" onclick="showAuthTab('register')" style="background: var(--comic-green);">
             <i class="fas fa-user-plus"></i> DAFTAR
-          </button>
-          <button class="comic-btn-small" onclick="openModal('modal-owner-login')" style="background: var(--comic-pink); color: #fff;">
-            <i class="fas fa-crown"></i> OWNER
           </button>
         </div>
 
+        <!-- Logged In Controls (Saat Sudah Login) -->
         <div id="user-logged-group" class="user-logged-group" style="display: none;">
           <span id="user-badge-name" class="user-badge-name"></span>
           <button id="btn-owner-panel-trigger" class="comic-btn-small" onclick="openModal('modal-owner-panel')" style="display: none; background: var(--comic-yellow);">
-            <i class="fas fa-tools"></i> PANEL OWNER
+            <i class="fas fa-crown"></i> PANEL OWNER
           </button>
           <button class="comic-btn-small" onclick="handleLogout()" style="background: var(--comic-pink); color: #fff;">
             <i class="fas fa-sign-out-alt"></i> LOGOUT
@@ -56,220 +54,193 @@
   <!-- Main Comic Content -->
   <main class="comic-main">
 
-    <!-- Hero Comic Card -->
-    <section class="hero-comic-card">
-      <div class="hero-sunburst"></div>
-      <div class="hero-content">
-        <div class="comic-tagline">⚡ DEDICATED ALIGHT MOTION PREMIUM GENERATOR ⚡</div>
-        <h2 class="hero-heading">CREATE ALIGHT MOTION PREMIUM! 💥</h2>
-        
-        <div class="speech-panel">
-          <div class="mascot-avatar">⚡</div>
-          <div class="speech-bubble">
-            <b>CAPTAIN ALIGHT SAYS:</b><br>
-            "Selamat datang Hero! Masukkan email target di <b>STEP 1</b> untuk kirim Magic Link, lalu paste link verifikasi di <b>STEP 2</b> untuk Unlock Alight Motion Pro Premium secara otomatis!"
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Live API Status Bar -->
-    <div class="api-health-bar">
-      <div id="health-dot" class="health-dot"></div>
-      <div id="health-status-text">MEMERIKSA STATUS SERVER ALIGHT MOTION...</div>
-    </div>
-
-    <!-- Generator Grid: Step 1 & Step 2 -->
-    <section class="generator-grid">
-
-      <!-- STEP 1: SEND MAGIC LINK -->
-      <article class="comic-card">
-        <div class="card-burst-badge">STEP 1</div>
-        <h3 class="card-title">
-          <i class="fas fa-paper-plane" style="color: var(--comic-pink);"></i> REQUEST LINK ⚡
-        </h3>
-        <p class="card-desc">Kirim Magic Link verifikasi Alight Motion ke email target secara instan.</p>
-
-        <form id="form-send-link">
-          <div class="form-group">
-            <label class="form-label" for="send-email-input">TARGET EMAIL ADDRESS:</label>
-            <input type="email" id="send-email-input" class="comic-input" placeholder="target@email.com" required autocomplete="email">
-            
-            <div class="input-helpers">
-              <button type="button" class="btn-helper" onclick="generateRandomEmail()">🎲 Random Email</button>
-              <button type="button" class="btn-helper" onclick="document.getElementById('send-email-input').value='hero' + Math.floor(Math.random()*9000+1000) + '@gmail.com'">📧 @gmail.com</button>
+    <!-- ==========================================================================
+         1. VIEW SAAT BELUM LOGIN (LANDING & UNIFIED LOGIN/REGISTER CARD)
+         ========================================================================== -->
+    <section id="view-guest-landing" class="guest-landing-container">
+      
+      <!-- Hero Banner Welcome -->
+      <div class="hero-comic-card">
+        <div class="hero-sunburst"></div>
+        <div class="hero-content">
+          <div class="comic-tagline">⚡ WELCOME HERO! SILAKAN LOGIN UNTUK MEMBUKA FITUR ⚡</div>
+          <h2 class="hero-heading">ALIGHT MOTION PRO GENERATOR! 💥</h2>
+          
+          <div class="speech-panel">
+            <div class="mascot-avatar">⚡</div>
+            <div class="speech-bubble">
+              <b>CAPTAIN ALIGHT SAYS:</b><br>
+              "Halo Hero! Silakan <b>Login</b> atau <b>Daftar Akun Baru</b> terlebih dahulu untuk mengakses fitur otomatis Alight Motion Premium Generator secara penuh!"
             </div>
           </div>
-
-          <button type="submit" id="btn-send-link" class="comic-btn-primary">
-            <i class="fas fa-bolt"></i> SEND MAGIC LINK NOW!
-          </button>
-        </form>
-
-        <div id="send-link-output" class="output-box">
-          <div class="output-header">
-            <span>RESPONSE CONSOLE</span>
-            <span>STATUS: READY</span>
-          </div>
-          <pre id="send-link-json" style="margin: 0; white-space: pre-wrap; font-family: inherit;"></pre>
         </div>
-      </article>
+      </div>
 
-      <!-- STEP 2: ACTIVATE PREMIUM -->
-      <article class="comic-card">
-        <div class="card-burst-badge" style="background: var(--comic-yellow); color: var(--comic-ink);">STEP 2</div>
-        <h3 class="card-title">
-          <i class="fas fa-key" style="color: var(--comic-cyan);"></i> ACTIVATE POWERS 💥
-        </h3>
-        <p class="card-desc">Aktivasi akun Alight Motion menjadi Premium menggunakan Magic Link yang diterima.</p>
-
-        <form id="form-activate">
-          <div class="form-group">
-            <label class="form-label" for="activate-email-input">TARGET EMAIL ADDRESS:</label>
-            <input type="email" id="activate-email-input" class="comic-input" placeholder="target@email.com" required>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label" for="activate-link-input">MAGIC LINK VERIFIKASI:</label>
-            <input type="url" id="activate-link-input" class="comic-input" placeholder="https://alightcreative.com/..." required>
-          </div>
-
-          <button type="submit" id="btn-activate" class="comic-btn-primary comic-btn-danger">
-            <i class="fas fa-rocket"></i> UNLOCK PREMIUM POWERS!
+      <!-- Unified Login & Register Comic Card -->
+      <div class="comic-card auth-unified-card">
+        <div class="auth-tabs-nav">
+          <button id="tab-btn-login" class="auth-tab-btn active" onclick="showAuthTab('login')">
+            <i class="fas fa-lock"></i> MASUK (LOGIN)
           </button>
-        </form>
-
-        <div id="activate-output" class="output-box">
-          <div class="output-header">
-            <span>ACTIVATION CONSOLE</span>
-            <span>STATUS: READY</span>
-          </div>
-          <pre id="activate-json" style="margin: 0; white-space: pre-wrap; font-family: inherit;"></pre>
+          <button id="tab-btn-register" class="auth-tab-btn" onclick="showAuthTab('register')">
+            <i class="fas fa-user-plus"></i> DAFTAR AKUN
+          </button>
         </div>
-      </article>
+
+        <!-- FORM LOGIN (Dapat untuk User & Owner) -->
+        <div id="auth-panel-login" class="auth-panel active">
+          <h3 class="auth-panel-title"><i class="fas fa-sign-in-alt"></i> LOGIN AKUN HERO / OWNER</h3>
+          <p class="auth-panel-sub">Masukkan username dan password kamu untuk membuka fitur generator.</p>
+
+          <form id="form-login-unified">
+            <div class="form-group">
+              <label class="form-label" for="login-username">USERNAME / OWNER:</label>
+              <input type="text" id="login-username" class="comic-input" placeholder="Masukkan username" required autocomplete="username">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="login-password">PASSWORD:</label>
+              <input type="password" id="login-password" class="comic-input" placeholder="Masukkan password" required autocomplete="current-password">
+            </div>
+            <button type="submit" class="comic-btn-primary">
+              <i class="fas fa-bolt"></i> MASUK & BUKA FITUR GENERATOR!
+            </button>
+          </form>
+        </div>
+
+        <!-- FORM DAFTAR -->
+        <div id="auth-panel-register" class="auth-panel">
+          <h3 class="auth-panel-title"><i class="fas fa-user-plus"></i> DAFTAR AKUN BARU</h3>
+          <p class="auth-panel-sub">Buat akun Hero kamu secara gratis untuk mulai menggunakan generator.</p>
+
+          <form id="form-register-unified">
+            <div class="form-group">
+              <label class="form-label" for="reg-username">USERNAME BARU:</label>
+              <input type="text" id="reg-username" class="comic-input" placeholder="Buat username unik" required autocomplete="username">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="reg-email">EMAIL ADDRESS:</label>
+              <input type="email" id="reg-email" class="comic-input" placeholder="email@domain.com" required autocomplete="email">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="reg-password">PASSWORD:</label>
+              <input type="password" id="reg-password" class="comic-input" placeholder="Buat password rahasia" required autocomplete="new-password">
+            </div>
+            <button type="submit" class="comic-btn-primary" style="background: var(--comic-green);">
+              <i class="fas fa-check-circle"></i> DAFTAR SEKARANG
+            </button>
+          </form>
+        </div>
+
+      </div>
 
     </section>
 
-    <!-- Axios Code Explorer Snippet Card (KODE PROXY AMAN TANPA MENUNJUKKAN API KEY SENSITIF) -->
-    <section class="code-snippet-card">
-      <div class="code-snippet-header">
-        <div class="code-title">
-          <i class="fas fa-code" style="color: var(--comic-pink);"></i> NODE.JS / AXIOS API INTEGRATION
+    <!-- ==========================================================================
+         2. VIEW SAAT SUDAH LOGIN (FITUR GENERATOR DIBUKA LENGKAP)
+         ========================================================================== -->
+    <section id="view-user-dashboard" class="user-dashboard-container" style="display: none;">
+
+      <!-- Hero Logged In Banner -->
+      <div class="hero-comic-card">
+        <div class="hero-sunburst"></div>
+        <div class="hero-content">
+          <div class="comic-tagline">⚡ ACCESS GRANTED — SYSTEM UNLOCKED ⚡</div>
+          <h2 class="hero-heading">CREATE ALIGHT MOTION PREMIUM! 💥</h2>
+          
+          <div class="speech-panel">
+            <div class="mascot-avatar">⚡</div>
+            <div class="speech-bubble">
+              <b id="mascot-user-greeting">CAPTAIN ALIGHT SAYS:</b><br>
+              "Akses fitur lengkap dibuka! Masukkan email target di <b>STEP 1</b> untuk kirim Magic Link, lalu paste link verifikasi di <b>STEP 2</b> untuk Unlock Alight Motion Pro Premium secara otomatis!"
+            </div>
+          </div>
         </div>
-        <button class="comic-btn-small" onclick="copySnippetCode()" style="background: var(--comic-green);">
-          <i class="fas fa-copy"></i> COPY CODE
-        </button>
       </div>
-      <p style="color: #BBB; margin-bottom: 1rem; font-size: 0.95rem;">
-        Contoh pemanggilan API Generator Alight Motion secara aman lewat backend proxy Node.js:
-      </p>
-      <pre class="code-pre" id="snippet-code-text"><code>const axios = require('axios');
 
-// Web Proxy Endpoint (API Key disimpan aman di backend)
-const BASE_URL = 'https://your-domain.com/api';
+      <!-- Live API Status Bar -->
+      <div class="api-health-bar">
+        <div id="health-dot" class="health-dot"></div>
+        <div id="health-status-text">MEMERIKSA STATUS SERVER ALIGHT MOTION...</div>
+      </div>
 
-async function generateAlightMotion() {
-  try {
-    // 1. Kirim Magic Link ke Target Email
-    const sendLink = await axios.post(`${BASE_URL}/send-link`, {
-      email: 'target@email.com'
-    });
-    console.log('Send Link Result:', sendLink.data);
+      <!-- Generator Grid: Step 1 & Step 2 -->
+      <div class="generator-grid">
 
-    // 2. Aktivasi Lisensi Premium dengan Magic Link
-    const activate = await axios.post(`${BASE_URL}/activate`, {
-      email: 'target@email.com',
-      magicLink: 'https://alightcreative.com/...'
-    });
-    console.log('Activate Result:', activate.data);
-  } catch (error) {
-    console.error('API Error:', error.response?.data || error.message);
-  }
-}
+        <!-- STEP 1: SEND MAGIC LINK -->
+        <article class="comic-card">
+          <div class="card-burst-badge">STEP 1</div>
+          <h3 class="card-title">
+            <i class="fas fa-paper-plane" style="color: var(--comic-pink);"></i> REQUEST LINK ⚡
+          </h3>
+          <p class="card-desc">Kirim Magic Link verifikasi Alight Motion ke email target secara instan.</p>
 
-generateAlightMotion();</code></pre>
+          <form id="form-send-link">
+            <div class="form-group">
+              <label class="form-label" for="send-email-input">TARGET EMAIL ADDRESS:</label>
+              <input type="email" id="send-email-input" class="comic-input" placeholder="target@email.com" required autocomplete="email">
+              
+              <div class="input-helpers">
+                <button type="button" class="btn-helper" onclick="generateRandomEmail()">🎲 Random Email</button>
+                <button type="button" class="btn-helper" onclick="document.getElementById('send-email-input').value='hero' + Math.floor(Math.random()*9000+1000) + '@gmail.com'">📧 @gmail.com</button>
+              </div>
+            </div>
+
+            <button type="submit" id="btn-send-link" class="comic-btn-primary">
+              <i class="fas fa-bolt"></i> SEND MAGIC LINK NOW!
+            </button>
+          </form>
+
+          <div id="send-link-output" class="output-box">
+            <div class="output-header">
+              <span>RESPONSE CONSOLE</span>
+              <span>STATUS: READY</span>
+            </div>
+            <pre id="send-link-json" style="margin: 0; white-space: pre-wrap; font-family: inherit;"></pre>
+          </div>
+        </article>
+
+        <!-- STEP 2: ACTIVATE PREMIUM -->
+        <article class="comic-card">
+          <div class="card-burst-badge" style="background: var(--comic-yellow); color: var(--comic-ink);">STEP 2</div>
+          <h3 class="card-title">
+            <i class="fas fa-key" style="color: var(--comic-cyan);"></i> ACTIVATE POWERS 💥
+          </h3>
+          <p class="card-desc">Aktivasi akun Alight Motion menjadi Premium menggunakan Magic Link yang diterima.</p>
+
+          <form id="form-activate">
+            <div class="form-group">
+              <label class="form-label" for="activate-email-input">TARGET EMAIL ADDRESS:</label>
+              <input type="email" id="activate-email-input" class="comic-input" placeholder="target@email.com" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="activate-link-input">MAGIC LINK VERIFIKASI:</label>
+              <input type="url" id="activate-link-input" class="comic-input" placeholder="https://alightcreative.com/..." required>
+            </div>
+
+            <button type="submit" id="btn-activate" class="comic-btn-primary comic-btn-danger">
+              <i class="fas fa-rocket"></i> UNLOCK PREMIUM POWERS!
+            </button>
+          </form>
+
+          <div id="activate-output" class="output-box">
+            <div class="output-header">
+              <span>ACTIVATION CONSOLE</span>
+              <span>STATUS: READY</span>
+            </div>
+            <pre id="activate-json" style="margin: 0; white-space: pre-wrap; font-family: inherit;"></pre>
+          </div>
+        </article>
+
+      </div>
+
     </section>
 
   </main>
 
   <!-- ==========================================================================
-       COMIC MODALS (LOGIN, REGISTER, OWNER LOGIN & OWNER PANEL)
+       MODAL OWNER CONTROL CENTER (Dapat diakses Owner setelah Login)
        ========================================================================== -->
-
-  <!-- Modal Login User -->
-  <div id="modal-login" class="comic-modal-overlay">
-    <div class="comic-modal-box">
-      <button class="modal-close-btn" onclick="closeModal('modal-login')">&times;</button>
-      <div class="modal-badge">HERO LOGIN</div>
-      <h3 class="modal-title"><i class="fas fa-user"></i> LOGIN AKUN HERO</h3>
-      
-      <form id="form-login-user">
-        <div class="form-group">
-          <label class="form-label">USERNAME:</label>
-          <input type="text" id="login-username" class="comic-input" placeholder="Masukkan username" required>
-        </div>
-        <div class="form-group">
-          <label class="form-label">PASSWORD:</label>
-          <input type="password" id="login-password" class="comic-input" placeholder="Masukkan password" required>
-        </div>
-        <button type="submit" class="comic-btn-primary">
-          <i class="fas fa-sign-in-alt"></i> MASUK SEKARANG
-        </button>
-      </form>
-    </div>
-  </div>
-
-  <!-- Modal Daftar User -->
-  <div id="modal-register" class="comic-modal-overlay">
-    <div class="comic-modal-box">
-      <button class="modal-close-btn" onclick="closeModal('modal-register')">&times;</button>
-      <div class="modal-badge" style="background: var(--comic-green);">JOIN HEROES</div>
-      <h3 class="modal-title"><i class="fas fa-user-plus"></i> DAFTAR AKUN BARU</h3>
-      
-      <form id="form-register-user">
-        <div class="form-group">
-          <label class="form-label">USERNAME:</label>
-          <input type="text" id="reg-username" class="comic-input" placeholder="Buat username unik" required>
-        </div>
-        <div class="form-group">
-          <label class="form-label">EMAIL:</label>
-          <input type="email" id="reg-email" class="comic-input" placeholder="email@domain.com" required>
-        </div>
-        <div class="form-group">
-          <label class="form-label">PASSWORD:</label>
-          <input type="password" id="reg-password" class="comic-input" placeholder="Buat password rahasia" required>
-        </div>
-        <button type="submit" class="comic-btn-primary" style="background: var(--comic-green);">
-          <i class="fas fa-check-circle"></i> DAFTAR AKUN HERO
-        </button>
-      </form>
-    </div>
-  </div>
-
-  <!-- Modal Login Owner -->
-  <div id="modal-owner-login" class="comic-modal-overlay">
-    <div class="comic-modal-box" style="border-color: var(--comic-pink);">
-      <button class="modal-close-btn" onclick="closeModal('modal-owner-login')">&times;</button>
-      <div class="modal-badge" style="background: var(--comic-pink); color: #fff;">OWNER ONLY</div>
-      <h3 class="modal-title"><i class="fas fa-crown" style="color: var(--comic-yellow);"></i> LOGIN OWNER SUPREME</h3>
-      
-      <form id="form-owner-login">
-        <div class="form-group">
-          <label class="form-label">OWNER USERNAME:</label>
-          <input type="text" id="owner-login-user" class="comic-input" value="owner" required>
-        </div>
-        <div class="form-group">
-          <label class="form-label">OWNER PASSWORD:</label>
-          <input type="password" id="owner-login-pass" class="comic-input" placeholder="Masukkan password owner" required>
-        </div>
-        <button type="submit" class="comic-btn-primary comic-btn-danger">
-          <i class="fas fa-key"></i> MASUK PANEL OWNER
-        </button>
-      </form>
-    </div>
-  </div>
-
-  <!-- Modal Panel Owner (FITUR LENGKAP & GANTI API KEY ALIGHT MOTION) -->
   <div id="modal-owner-panel" class="comic-modal-overlay">
     <div class="comic-modal-box modal-large" style="border-color: var(--comic-yellow);">
       <button class="modal-close-btn" onclick="closeModal('modal-owner-panel')">&times;</button>
@@ -335,7 +306,7 @@ generateAlightMotion();</code></pre>
   <footer class="comic-footer">
     <p>⚡ BRANN ALIGHT MOTION GENERATOR — POP-ART COMIC EDITION 💥</p>
     <p style="margin-top: 0.4rem; font-size: 0.8rem; color: #555;">
-      Powered by Dedicated Engine API | Hidden Credentials Security Protected
+      Powered by Dedicated Engine API | Protected Authentication System
     </p>
   </footer>
 
