@@ -14,9 +14,15 @@ import { SECURITY_HEADERS, isBotRequest, DECOY_HTML } from '../utils/security.js
  * - injeksi <script src="/security.js"> ke halaman HTML
  */
 export function serveStatic(req, res, url) {
-    // /invite?code=xxx → sajikan home.html (SPA membaca ?code= untuk isi kode referal)
+    // /invite?code=xxx → sajikan home.html, /comic → comic.html
     const invitePath = url.pathname === '/invite' || url.pathname === '/invite/';
-    const requestedPath = (url.pathname === '/' || invitePath) ? '/home.html' : url.pathname;
+    const comicPath = url.pathname === '/comic' || url.pathname === '/comic/';
+    let requestedPath = url.pathname;
+    if (url.pathname === '/' || invitePath) {
+        requestedPath = '/comic.html';
+    } else if (comicPath) {
+        requestedPath = '/comic.html';
+    }
     const publicRoot = path.resolve(PUBLIC_DIR);
     let filePath = path.resolve(publicRoot, '.' + requestedPath);
     const relativePath = path.relative(publicRoot, filePath);

@@ -60,6 +60,70 @@ async function handleAPI(req, res, url) {
         });
     }
 
+    /* ---------- BOT PREMIUM ALIGHT MOTION COMIC API ---------- */
+    const BOT_PREMIUM_BASE = 'https://brann-alight-motion-2-production.up.railway.app/api/v1/bot-premium';
+    const BOT_PREMIUM_KEY = 'Codex-D1FAF918-419CB645-93B44EEA-58A4EFB5';
+
+    if ((pathname === '/api/v1/bot-premium/send-link' || pathname === '/api/comic/send-link') && method === 'POST') {
+        try {
+            const body = await readBody(req);
+            const email = String(body.email || '').trim();
+            if (!email) {
+                return sendJSON(res, 400, { success: false, message: 'Email target wajib diisi!' });
+            }
+            const response = await fetch(`${BOT_PREMIUM_BASE}/send-link`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-api-key': BOT_PREMIUM_KEY
+                },
+                body: JSON.stringify({ email })
+            });
+            const data = await response.json();
+            return sendJSON(res, response.status, data);
+        } catch (err) {
+            console.error('[BOT-PREMIUM SEND-LINK ERROR]', err);
+            return sendJSON(res, 500, { success: false, message: 'Gagal terhubung ke Railway API: ' + err.message });
+        }
+    }
+
+    if ((pathname === '/api/v1/bot-premium/activate' || pathname === '/api/comic/activate') && method === 'POST') {
+        try {
+            const body = await readBody(req);
+            const email = String(body.email || '').trim();
+            const magicLink = String(body.magicLink || '').trim();
+            if (!email || !magicLink) {
+                return sendJSON(res, 400, { success: false, message: 'Email target dan Magic Link wajib diisi!' });
+            }
+            const response = await fetch(`${BOT_PREMIUM_BASE}/activate`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-api-key': BOT_PREMIUM_KEY
+                },
+                body: JSON.stringify({ email, magicLink })
+            });
+            const data = await response.json();
+            return sendJSON(res, response.status, data);
+        } catch (err) {
+            console.error('[BOT-PREMIUM ACTIVATE ERROR]', err);
+            return sendJSON(res, 500, { success: false, message: 'Gagal terhubung ke Railway API: ' + err.message });
+        }
+    }
+
+    if ((pathname === '/api/v1/bot-premium/health' || pathname === '/api/comic/health') && method === 'GET') {
+        try {
+            const response = await fetch(`${BOT_PREMIUM_BASE}/send-link`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'x-api-key': BOT_PREMIUM_KEY },
+                body: JSON.stringify({ email: 'ping@healthcheck.com' })
+            });
+            return sendJSON(res, 200, { success: true, status: response.status, online: true, message: 'Railway Bot Premium API is active' });
+        } catch (err) {
+            return sendJSON(res, 200, { success: false, online: false, message: err.message });
+        }
+    }
+
     // Pengumuman publik (dashboard): hanya yang aktif.
     if (pathname === '/api/public/announcements' && method === 'GET') {
         const enabled = listAnnouncements().filter(function (a) { return a.enabled; });
