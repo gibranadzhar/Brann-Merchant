@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>⚡ ALIGHT MOTION PRO — COMIC GENERATOR 💥</title>
-  <meta name="description" content="Website Alight Motion Premium Generator Pop-Art Komik super keren!">
+  <meta name="description" content="Website Alight Motion Premium Generator Pop-Art Komik super keren dengan Auto Activation InboxKitten!">
   <link rel="icon" type="image/png" href="/images/logo-192.png">
   
   <!-- Font Awesome Icons -->
@@ -144,14 +144,14 @@
       <div class="hero-comic-card">
         <div class="hero-sunburst"></div>
         <div class="hero-content">
-          <div class="comic-tagline">⚡ ACCESS GRANTED — SYSTEM UNLOCKED ⚡</div>
+          <div class="comic-tagline">⚡ SYSTEM UNLOCKED — INBOXKITTEN AUTO ACTIVATION READY ⚡</div>
           <h2 class="hero-heading">CREATE ALIGHT MOTION PREMIUM! 💥</h2>
           
           <div class="speech-panel">
             <div class="mascot-avatar">⚡</div>
             <div class="speech-bubble">
               <b id="mascot-user-greeting">CAPTAIN ALIGHT SAYS:</b><br>
-              "Akses fitur lengkap dibuka! Masukkan email target di <b>STEP 1</b> untuk kirim Magic Link, lalu paste link verifikasi di <b>STEP 2</b> untuk Unlock Alight Motion Pro Premium secara otomatis!"
+              "Gunakan tombol <b>1-CLICK AUTO AKTIVASI INBOXKITTEN</b> untuk otomatis generate temp email, ambil link verifikasi, dan aktivasi Lisensi Premium secara instan tanpa ribet!"
             </div>
           </div>
         </div>
@@ -163,10 +163,32 @@
         <div id="health-status-text">MEMERIKSA STATUS SERVER ALIGHT MOTION...</div>
       </div>
 
-      <!-- Generator Grid: Step 1 & Step 2 -->
+      <!-- FITUR UTAMA 1: 1-CLICK INBOXKITTEN AUTO ACTIVATION -->
+      <div class="comic-card" style="margin-bottom: 2rem; border-color: var(--comic-yellow); background: var(--comic-paper);">
+        <div class="card-burst-badge" style="background: var(--comic-green); color: #000;">FEATURE #1</div>
+        <h3 class="card-title">
+          <i class="fas fa-cat" style="color: var(--comic-orange);"></i> 1-CLICK AUTO AKTIVASI INSTAN (INBOXKITTEN) 🚀
+        </h3>
+        <p class="card-desc">Sistem akan membuat email sementara `@inboxkitten.com`, mengirim Magic Link, mengambil verifikasi secara otomatis, dan mengaktifkan Lisensi Alight Motion Premium!</p>
+
+        <button id="btn-auto-inboxkitten" type="button" class="comic-btn-primary" style="background: var(--comic-yellow); font-size: 1.3rem;" onclick="handleAutoInboxKitten()">
+          <i class="fas fa-rocket"></i> MULAI AUTO AKTIVASI INSTAN (INBOXKITTEN)!
+        </button>
+
+        <!-- Progress Log Status -->
+        <div id="inboxkitten-progress-box" class="output-box" style="margin-top: 1.2rem;">
+          <div class="output-header">
+            <span>INBOXKITTEN AUTO-ACTIVATION PROGRESS</span>
+            <span id="auto-step-status">WAITING...</span>
+          </div>
+          <pre id="inboxkitten-progress-text" style="margin: 0; white-space: pre-wrap; font-family: inherit; font-size: 0.95rem;">Tekan tombol di atas untuk memulai auto aktivasi otomatis.</pre>
+        </div>
+      </div>
+
+      <!-- Generator Grid: Step 1 & Step 2 (MANUAL OPTION) -->
       <div class="generator-grid">
 
-        <!-- STEP 1: SEND MAGIC LINK -->
+        <!-- STEP 1: SEND MAGIC LINK MANUAL -->
         <article class="comic-card">
           <div class="card-burst-badge">STEP 1</div>
           <h3 class="card-title">
@@ -177,11 +199,10 @@
           <form id="form-send-link">
             <div class="form-group">
               <label class="form-label" for="send-email-input">TARGET EMAIL ADDRESS:</label>
-              <input type="email" id="send-email-input" class="comic-input" placeholder="target@email.com" required autocomplete="email">
+              <input type="email" id="send-email-input" class="comic-input" placeholder="target@inboxkitten.com" required autocomplete="email">
               
               <div class="input-helpers">
-                <button type="button" class="btn-helper" onclick="generateRandomEmail()">🎲 Random Email</button>
-                <button type="button" class="btn-helper" onclick="document.getElementById('send-email-input').value='hero' + Math.floor(Math.random()*9000+1000) + '@gmail.com'">📧 @gmail.com</button>
+                <button type="button" class="btn-helper" onclick="generateInboxKittenEmail()">🐱 Temp Email (@inboxkitten.com)</button>
               </div>
             </div>
 
@@ -199,7 +220,7 @@
           </div>
         </article>
 
-        <!-- STEP 2: ACTIVATE PREMIUM -->
+        <!-- STEP 2: ACTIVATE PREMIUM MANUAL -->
         <article class="comic-card">
           <div class="card-burst-badge" style="background: var(--comic-yellow); color: var(--comic-ink);">STEP 2</div>
           <h3 class="card-title">
@@ -210,7 +231,7 @@
           <form id="form-activate">
             <div class="form-group">
               <label class="form-label" for="activate-email-input">TARGET EMAIL ADDRESS:</label>
-              <input type="email" id="activate-email-input" class="comic-input" placeholder="target@email.com" required>
+              <input type="email" id="activate-email-input" class="comic-input" placeholder="target@inboxkitten.com" required>
             </div>
 
             <div class="form-group">
@@ -306,7 +327,7 @@
   <footer class="comic-footer">
     <p>⚡ BRANN ALIGHT MOTION GENERATOR — POP-ART COMIC EDITION 💥</p>
     <p style="margin-top: 0.4rem; font-size: 0.8rem; color: #555;">
-      Powered by Dedicated Engine API | Protected Authentication System
+      Powered by Dedicated Engine API | InboxKitten Auto Activation Powered
     </p>
   </footer>
 

@@ -61,7 +61,7 @@ let config = readJSON(CONFIG_FILE, DEFAULT_CONFIG);
 let users = readJSON(USERS_FILE, []);
 let logs = readJSON(LOGS_FILE, []);
 
-// Safe Auto Sync Database ke GitHub (tidak akan pernah crash server Railway)
+// Safe Auto Sync Database ke GitHub
 let syncTimeout = null;
 function triggerGithubSync() {
   if (!config.autoPushGithub) return;
@@ -70,7 +70,6 @@ function triggerGithubSync() {
     try {
       exec('git add data/*.json && git commit -m "auto: Sync database updates" && git push origin master', { cwd: __dirname }, (error) => {
         if (error) {
-          // Normal di environment container seperti Railway yang tidak punya git credentials
           console.log('[AUTO GITHUB SYNC] Info: Local file saved.');
         } else {
           console.log('[AUTO GITHUB SYNC SUCCESS] Database synced to GitHub!');
@@ -176,7 +175,7 @@ app.post('/api/auth/login', (req, res) => {
 });
 
 /* ==========================================================================
-   ALIGHT MOTION GENERATOR ENDPOINTS (API KEY & URL PROTECTED)
+   ALIGHT MOTION GENERATOR ENDPOINTS
    ========================================================================== */
 
 app.post('/api/send-link', async (req, res) => {
@@ -222,7 +221,92 @@ app.post('/api/activate', async (req, res) => {
 });
 
 /* ==========================================================================
-   FITUR OWNER (PANEL OWNER & UPDATE CONFIG)
+   INBOXKITTEN AUTOMATIC MAGICK LINK FETCH & AUTO ACTIVATION
+   ========================================================================== */
+
+app.post('/api/inboxkitten/auto-activate', async (req, res) => {
+  const { username } = req.body;
+  const recipient = 'hero' + Math.floor(Math.random() * 899999 + 100000);
+  const email = `${recipient}@inboxkitten.com`;
+
+  try {
+    // Step 1: Kirim magic link
+    const sendRes = await axios.post(`${config.baseUrl}/send-link`, { email }, {
+      headers: { 'x-api-key': config.apiKey }
+    });
+
+    if (!sendRes.data || !sendRes.data.success) {
+      return res.status(400).json({ success: false, message: 'Gagal mengirim magic link: ' + (sendRes.data?.message || 'Unknown error') });
+    }
+
+    // Step 2: Poll InboxKitten API hingga pesan masuk (maksimal 30 detik)
+    let storageKey = null;
+    const startTime = Date.now();
+
+    while (Date.now() - startTime < 35000) {
+      await new Promise(r => setTimeout(r, 3000));
+      try {
+        const listRes = await axios.get(`https://inboxkitten.com/api/v1/mail/list?recipient=${recipient}`);
+        const mailList = listRes.data;
+        if (Array.isArray(mailList) && mailList.length > 0) {
+          const firstMail = mailList[0];
+          if (firstMail && firstMail.storage && firstMail.storage.key) {
+            storageKey = firstMail.storage.key;
+            break;
+          }
+        }
+      } catch (e) {}
+    }
+
+    if (!storageKey) {
+      return res.status(408).json({
+        success: false,
+        email,
+        message: 'Timeout: Email belum masuk di InboxKitten setelah 35 detik. Anda bisa mengecek inbox manual di inboxkitten.com.'
+      });
+    }
+
+    // Step 3: Ambil HTML pesan dari InboxKitten & ekstrak magic link
+    const getRes = await axios.get(`https://inboxkitten.com/api/v1/mail/get?mailKey=${storageKey}`);
+    const htmlContent = String(getRes.data || '');
+
+    // Match Firebase / Alight Creative magic link pattern
+    const linkMatch = htmlContent.match(/https:\/\/[^\s"'<>]*alight[^\s"'<>]*/i) || htmlContent.match(/https:\/\/alightcreative\.com[^\s"'<>]*/i);
+
+    if (!linkMatch || !linkMatch[0]) {
+      return res.status(400).json({
+        success: false,
+        email,
+        message: 'Pesan diterima di InboxKitten tetapi Magic Link tidak dapat diekstrak secara otomatis.'
+      });
+    }
+
+    const magicLink = linkMatch[0];
+
+    // Step 4: Otomatis panggil API Activate
+    const activateRes = await axios.post(`${config.baseUrl}/activate`, { email, magicLink }, {
+      headers: { 'x-api-key': config.apiKey }
+    });
+
+    addLog(username || 'guest', 'AUTO_ACTIVATE_INBOXKITTEN', 'SUCCESS', `Auto aktivasi sukses untuk ${email}`);
+
+    return res.json({
+      success: true,
+      email,
+      magicLink,
+      activation: activateRes.data,
+      message: `🎉 KABOOM! Akun ${email} BERHASIL Diaktifkan Secara Otomatis via InboxKitten!`
+    });
+
+  } catch (err) {
+    const errorMsg = err.response?.data?.message || err.message;
+    addLog(username || 'guest', 'AUTO_ACTIVATE_INBOXKITTEN', 'FAILED', errorMsg);
+    return res.status(500).json({ success: false, email, message: 'Gagal auto aktivasi: ' + errorMsg });
+  }
+});
+
+/* ==========================================================================
+   FITUR OWNER
    ========================================================================== */
 
 function isOwnerRequest(req) {

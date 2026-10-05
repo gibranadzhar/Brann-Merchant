@@ -1,5 +1,5 @@
 /* ==========================================================================
-   ALIGHT MOTION PRO GENERATOR — UNIFIED AUTH & DEDICATED JAVASCRIPT
+   ALIGHT MOTION PRO GENERATOR — INBOXKITTEN AUTO ACTIVATION & JAVASCRIPT
    ========================================================================== */
 
 (function () {
@@ -11,7 +11,6 @@
   let soundEnabled = true;
   let audioCtx = null;
 
-  // Web Audio Synthesizer
   function initAudio() {
     if (!audioCtx) {
       const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -93,7 +92,6 @@
     }, 800);
   }
 
-  // Auth Tab Switcher (Login / Register Card)
   window.showAuthTab = function (tabName) {
     playZapSound();
     const tabLogin = document.getElementById('tab-btn-login');
@@ -114,7 +112,6 @@
     }
   };
 
-  // Modal Controls
   window.openModal = function (modalId) {
     playZapSound();
     const modal = document.getElementById(modalId);
@@ -131,7 +128,6 @@
     if (modal) modal.classList.remove('active');
   };
 
-  // Auth View Gating (Update UI Sesuai Status Login)
   function updateAuthUI() {
     const guestLanding = document.getElementById('view-guest-landing');
     const userDashboard = document.getElementById('view-user-dashboard');
@@ -142,7 +138,6 @@
     const mascotGreeting = document.getElementById('mascot-user-greeting');
 
     if (currentUser) {
-      // 1. Tampilkan Dashboard Generator & Sembunyikan Landing Wall
       if (guestLanding) guestLanding.style.display = 'none';
       if (userDashboard) userDashboard.style.display = 'block';
 
@@ -163,7 +158,6 @@
         mascotGreeting.innerHTML = isOwner ? `WELCOME BACK SUPREME OWNER 👑 (${currentUser.username.toUpperCase()}):` : `WELCOME BACK HERO ⚡ (${currentUser.username.toUpperCase()}):`;
       }
     } else {
-      // 2. Kunci Fitur & Tampilkan Landing Wall Auth
       if (guestLanding) guestLanding.style.display = 'block';
       if (userDashboard) userDashboard.style.display = 'none';
 
@@ -183,7 +177,6 @@
     alert('⚡ Anda telah logout!');
   };
 
-  // Health check API
   async function checkApiHealth() {
     const dot = document.getElementById('health-dot');
     const statusText = document.getElementById('health-status-text');
@@ -194,7 +187,7 @@
       const data = await res.json();
       if (data && data.online) {
         if (dot) dot.style.background = '#00FF66';
-        statusText.innerHTML = '⚡ RAILWAY API ONLINE & READY FOR ALIGHT MOTION POWERS!';
+        statusText.innerHTML = '⚡ RAILWAY API ONLINE & INBOXKITTEN AUTO ACTIVATION READY!';
       } else {
         if (dot) dot.style.background = '#FF6B00';
         statusText.innerHTML = '⚠️ RAILWAY API CONNECTED';
@@ -205,11 +198,80 @@
     }
   }
 
+  /* ==========================================================================
+     1-CLICK INBOXKITTEN AUTO ACTIVATION HANDLER
+     ========================================================================== */
+  window.handleAutoInboxKitten = async function () {
+    if (!currentUser) {
+      alert('⚡ Harap Login terlebih dahulu!');
+      return;
+    }
+
+    initAudio();
+    playBoomSound();
+
+    const btn = document.getElementById('btn-auto-inboxkitten');
+    const progressBox = document.getElementById('inboxkitten-progress-box');
+    const progressText = document.getElementById('inboxkitten-progress-text');
+    const stepStatus = document.getElementById('auto-step-status');
+
+    btn.disabled = true;
+    const originalBtnText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> MEMPROSES AUTO AKTIVASI INBOXKITTEN...';
+    progressBox.classList.add('active');
+
+    if (stepStatus) stepStatus.innerHTML = '<span style="color:#FFE600">PROCESSING...</span>';
+    progressText.innerHTML = `🐱 <b>STEP 1:</b> Membuat email temp InboxKitten...\n⚡ <b>STEP 2:</b> Mengirim Magic Link ke Railway API...\n⏳ <b>STEP 3:</b> Polling email & mengekstrak verifikasi link dari InboxKitten (Mohon tunggu max 30 detik)...`;
+
+    spawnPowText('AUTO AKTIVASI!', window.innerWidth / 2 - 100, 250);
+
+    try {
+      const res = await fetch('/api/inboxkitten/auto-activate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: currentUser ? currentUser.username : 'guest' })
+      });
+      const data = await res.json();
+
+      btn.disabled = false;
+      btn.innerHTML = originalBtnText;
+
+      if (res.ok && data.success) {
+        playVictorySound();
+        spawnPowText('AUTO UNLOCKED!', window.innerWidth / 2 - 100, 200);
+        if (stepStatus) stepStatus.innerHTML = '<span style="color:#00FF66">SUCCESS!</span>';
+
+        progressText.innerHTML = `<span style="color:#00FF66; font-weight:bold; font-size:1.1rem;">🎉 AUTO AKTIVASI BERHASIL 100%!</span>\n\n📌 <b>DETAIL AKUN PREMIUM:</b>\n- Email Temp: <b style="color:#FFE600">${data.email}</b>\n- Inbox Viewer: <a href="https://inboxkitten.com/inbox/${data.email.split('@')[0]}" target="_blank" style="color:#00F0FF; text-decoration:underline;">Cek InboxKitten Website</a>\n- Status: <b>PREMIUM ACTIVATED! 🎉</b>\n- Order ID: ${data.activation?.codeorder || data.activation?.orderId || 'SUCCESS'}\n\n✨ Akun Alight Motion Pro Premium tanpa watermark siap digunakan!`;
+      } else {
+        spawnPowText('FAILED!', window.innerWidth / 2 - 60, 200);
+        if (stepStatus) stepStatus.innerHTML = '<span style="color:#FF0055">FAILED</span>';
+        progressText.innerHTML = `<span style="color:#FF0055; font-weight:bold;">❌ GAGAL AUTO AKTIVASI: ${data.message}</span>\n\nEmail: ${data.email || '-'}\nAnda dapat mencoba menekan tombol sekali lagi atau menggunakan opsi manual.`;
+      }
+    } catch (err) {
+      btn.disabled = false;
+      btn.innerHTML = originalBtnText;
+      if (stepStatus) stepStatus.innerHTML = '<span style="color:#FF0055">ERROR</span>';
+      progressText.innerHTML = `<span style="color:#FF0055">❌ ERROR KONEKSI: ${err.message}</span>`;
+    }
+  };
+
+  // Helper untuk generate manual email temp inboxkitten
+  window.generateInboxKittenEmail = function () {
+    playZapSound();
+    const rand = Math.floor(Math.random() * 899999) + 100000;
+    const email = `hero${rand}@inboxkitten.com`;
+    const input1 = document.getElementById('send-email-input');
+    const input2 = document.getElementById('activate-email-input');
+    if (input1) input1.value = email;
+    if (input2) input2.value = email;
+    spawnPowText('TEMP EMAIL!', window.innerWidth / 2, 300);
+  };
+
   // Handle Send Link Form Submit
   async function handleSendLink(e) {
     e.preventDefault();
     if (!currentUser) {
-      alert('⚡ Harap Login terlebih dahulu untuk menggunakan fitur Generator!');
+      alert('⚡ Harap Login terlebih dahulu!');
       return;
     }
 
@@ -257,7 +319,7 @@
     if (isSuccess) {
       playVictorySound();
       spawnPowText('SUCCESS!', window.innerWidth / 2 - 80, 200);
-      outputContent.innerHTML = `<span style="color:#00FF66">✔ SUCCESS: ${resultData.message}</span>\n<span style="color:#FFE600">Order ID: ${resultData.orderId || '-'}</span>\n\n📌 <b>LANGKAH SELANJUTNYA:</b>\n1. Cek Email <b>${email}</b> (Inbox/Spam).\n2. Buka pesan dari Alight Creative & copy Magic Link.\n3. Paste Magic Link di form <b>STEP 2 (AKTIVASI PREMIUM)</b>!`;
+      outputContent.innerHTML = `<span style="color:#00FF66">✔ SUCCESS: ${resultData.message}</span>\n<span style="color:#FFE600">Order ID: ${resultData.orderId || '-'}</span>\n\n📌 <b>LANGKAH SELANJUTNYA:</b>\n1. Jika pakai @inboxkitten.com, buka <a href="https://inboxkitten.com/inbox/${email.split('@')[0]}" target="_blank" style="color:#00F0FF; text-decoration:underline;">InboxKitten Mailbox</a>.\n2. Copy Magic Link dari pesan Alight Creative.\n3. Paste Magic Link di form <b>STEP 2 (AKTIVASI PREMIUM)</b>!`;
       
       const actEmailInput = document.getElementById('activate-email-input');
       if (actEmailInput) actEmailInput.value = email;
@@ -271,7 +333,7 @@
   async function handleActivate(e) {
     e.preventDefault();
     if (!currentUser) {
-      alert('⚡ Harap Login terlebih dahulu untuk menggunakan fitur Generator!');
+      alert('⚡ Harap Login terlebih dahulu!');
       return;
     }
 
@@ -329,11 +391,7 @@
     }
   }
 
-  /* ==========================================================================
-     UNIFIED AUTH HANDLER (DISAMAKAN LOGIN USER & OWNER)
-     ========================================================================== */
-
-  // Single Unified Form Login (User & Owner)
+  // Unified Form Login
   async function handleUnifiedLogin(e) {
     e.preventDefault();
     const username = document.getElementById('login-username').value.trim();
@@ -397,7 +455,7 @@
   }
 
   /* ==========================================================================
-     OWNER PANEL HANDLERS (GANTI API KEY & GITHUB SYNC)
+     OWNER PANEL HANDLERS
      ========================================================================== */
 
   async function loadOwnerDashboardData() {
@@ -418,7 +476,7 @@
           logsBox.textContent = data.logs.map(l => `[${l.timestamp}] [${l.username.toUpperCase()}] ${l.action} -> ${l.status} (${l.detail})`).join('\n');
         }
       } else {
-        alert('Akses Owner Ditolak! Harap login ulang sebagai Owner.');
+        alert('Akses Owner Ditolak!');
         closeModal('modal-owner-panel');
       }
     } catch (err) {
@@ -426,7 +484,6 @@
     }
   }
 
-  // Submit Update API Key & Base URL
   async function handleUpdateApiKey(e) {
     e.preventDefault();
     const newApiKey = document.getElementById('owner-input-apikey').value.trim();
@@ -460,7 +517,6 @@
     }
   }
 
-  // Force Manual Github Sync
   window.triggerManualGithubSync = async function () {
     playZapSound();
     try {
@@ -479,18 +535,6 @@
     } catch (err) {
       alert('Error trigger GitHub sync: ' + err.message);
     }
-  };
-
-  // Utilities
-  window.generateRandomEmail = function () {
-    playZapSound();
-    const rand = Math.floor(Math.random() * 899999) + 100000;
-    const email = `hero${rand}@gmail.com`;
-    const input1 = document.getElementById('send-email-input');
-    const input2 = document.getElementById('activate-email-input');
-    if (input1) input1.value = email;
-    if (input2) input2.value = email;
-    spawnPowText('GENERATED!', window.innerWidth / 2, 300);
   };
 
   window.toggleSound = function () {
@@ -512,7 +556,6 @@
     const formAct = document.getElementById('form-activate');
     if (formAct) formAct.addEventListener('submit', handleActivate);
 
-    // Single Unified Auth Forms
     const formLogin = document.getElementById('form-login-unified');
     if (formLogin) formLogin.addEventListener('submit', handleUnifiedLogin);
 
