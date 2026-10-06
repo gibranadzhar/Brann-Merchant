@@ -1,0 +1,1529 @@
+<!DOCTYPE html>    
+<html lang="id">    
+<head>    
+    <meta charset="UTF-8">    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">    
+    <title>Codex X Gopay Merchant</title>    
+    <script src="https://cdn.tailwindcss.com"></script>    
+    <script src="https://unpkg.com/lucide@latest"></script>    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700;900&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('merchantTheme') || 'neobrutalism';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        })();
+    </script>
+    <style>
+        :root, [data-theme="neobrutalism"], [data-theme="light"] {
+            --bg-deep: #FDF6E9;
+            --bg-overlay: rgba(253, 246, 233, 0.86);
+            --card-bg: #FFFFFF;
+            --nav-bg: #FFFFFF;
+            --ink: #0A0A0A;
+            --text-secondary: #45403A;
+            --text-muted: #52525B;
+            --accent-cyan: #2B5FFF;
+            --accent-magenta: #FF3EA5;
+            --accent-emerald: #00C853;
+            --accent-amber: #FF7A00;
+            --accent-blue: #2B5FFF;
+            --accent-rose: #FF3B3B;
+            --accent-yellow: #FFDE59;
+            --terminal-bg: #0A0A0A;
+            --terminal-text: #6CFFB0;
+            --shadow-color: #0A0A0A;
+        }
+
+        [data-theme="cyberpunk"] {
+            --bg-deep: #0B0D17;
+            --bg-overlay: rgba(11, 13, 23, 0.92);
+            --card-bg: #141729;
+            --nav-bg: #141729;
+            --ink: #00FFCC;
+            --text-secondary: #CBD5E1;
+            --text-muted: #94A3B8;
+            --accent-cyan: #00F0FF;
+            --accent-magenta: #FF007F;
+            --accent-emerald: #00FF66;
+            --accent-amber: #FF9900;
+            --accent-blue: #7000FF;
+            --accent-rose: #FF0055;
+            --accent-yellow: #FFE600;
+            --terminal-bg: #05060A;
+            --terminal-text: #00FFCC;
+            --shadow-color: #FF007F;
+        }
+
+        [data-theme="dark"] {
+            --bg-deep: #121214;
+            --bg-overlay: rgba(18, 18, 20, 0.90);
+            --card-bg: #1E1E22;
+            --nav-bg: #1E1E22;
+            --ink: #F4F4F5;
+            --text-secondary: #D4D4D8;
+            --text-muted: #A1A1AA;
+            --accent-cyan: #38BDF8;
+            --accent-magenta: #F472B6;
+            --accent-emerald: #34D399;
+            --accent-amber: #FBBF24;
+            --accent-blue: #60A5FA;
+            --accent-rose: #F87171;
+            --accent-yellow: #FACC15;
+            --terminal-bg: #09090B;
+            --terminal-text: #4ADE80;
+            --shadow-color: #000000;
+        }
+
+        [data-theme="emerald"] {
+            --bg-deep: #051A14;
+            --bg-overlay: rgba(5, 26, 20, 0.92);
+            --card-bg: #0C2E24;
+            --nav-bg: #0C2E24;
+            --ink: #A7F3D0;
+            --text-secondary: #6EE7B7;
+            --text-muted: #34D399;
+            --accent-cyan: #06B6D4;
+            --accent-magenta: #F43F5E;
+            --accent-emerald: #10B981;
+            --accent-amber: #F59E0B;
+            --accent-blue: #3B82F6;
+            --accent-rose: #EF4444;
+            --accent-yellow: #34D399;
+            --terminal-bg: #02120D;
+            --terminal-text: #34D399;
+            --shadow-color: #064E3B;
+        }
+
+        [data-theme="purple"] {
+            --bg-deep: #130924;
+            --bg-overlay: rgba(19, 9, 36, 0.92);
+            --card-bg: #1F1138;
+            --nav-bg: #1F1138;
+            --ink: #E9D5FF;
+            --text-secondary: #D8B4FE;
+            --text-muted: #C084FC;
+            --accent-cyan: #38BDF8;
+            --accent-magenta: #D946EF;
+            --accent-emerald: #10B981;
+            --accent-amber: #F59E0B;
+            --accent-blue: #8B5CF6;
+            --accent-rose: #F43F5E;
+            --accent-yellow: #F59E0B;
+            --terminal-bg: #0A0414;
+            --terminal-text: #F0ABFC;
+            --shadow-color: #581C87;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-deep);
+            background-image:
+                linear-gradient(var(--ink) 2px, transparent 2px),
+                linear-gradient(90deg, var(--ink) 2px, transparent 2px);
+            background-size: 42px 42px;
+            background-position: -1px -1px;
+            background-attachment: fixed;
+            min-height: 100vh;
+            color: var(--ink);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            margin: 0;
+            opacity: 1;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-color: var(--bg-overlay);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        h1, h2, .font-display, nav span.font-black {
+            font-family: 'Space Grotesk', 'Inter', sans-serif;
+        }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .custom-scrollbar::-webkit-scrollbar { width: 8px; height: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--ink); border-radius: 0; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #333; }
+
+        .premium-card {
+            background: var(--card-bg);
+            border: 3px solid var(--ink);
+            border-radius: 4px;
+            box-shadow: 8px 8px 0 0 var(--shadow-color);
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+            animation: cardAppear 0.4s ease forwards;
+            position: relative;
+            overflow: hidden;
+        }
+        .premium-card:hover {
+            transform: translate(-3px, -3px);
+            box-shadow: 11px 11px 0 0 var(--shadow-color);
+        }
+        .premium-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 10px;
+            background: repeating-linear-gradient(45deg, var(--ink), var(--ink) 8px, transparent 8px, transparent 16px);
+            opacity: 0.08;
+            pointer-events: none;
+        }
+
+        @keyframes cardAppear {
+            from { opacity: 0; transform: translate(0, 18px); }
+            to { opacity: 1; transform: translate(0, 0); }
+        }
+
+        .glass-input {
+            background: #FFFFFF;
+            border: 3px solid var(--ink);
+            border-radius: 4px;
+            transition: box-shadow 0.15s ease, transform 0.15s ease;
+            overflow: hidden;
+            box-shadow: 4px 4px 0 0 var(--shadow-color);
+        }
+        .glass-input:focus-within {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0 0 var(--accent-cyan);
+        }
+        .glass-input input {
+            background: transparent;
+            border: none;
+            outline: none;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--ink);
+            padding: 18px 0;
+            width: 100%;
+        }
+        .glass-input input::placeholder {
+            color: #A8A29A;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            letter-spacing: -0.01em;
+        }
+        .glass-input .param-label {
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: 0.875rem;
+            font-weight: 800;
+            color: var(--ink);
+            white-space: nowrap;
+            user-select: none;
+            letter-spacing: -0.01em;
+            padding-right: 4px;
+        }
+
+        .api-terminal {
+            background: var(--terminal-bg);
+            background-image:
+                linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+            background-size: 20px 20px;
+            color: var(--terminal-text);
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            border: 3px solid var(--ink);
+            border-radius: 4px;
+            box-shadow: 6px 6px 0 0 var(--shadow-color);
+            position: relative;
+        }
+        .api-terminal .dots {
+            position: absolute;
+            top: 14px;
+            left: 16px;
+            display: flex;
+            gap: 9px;
+            z-index: 2;
+        }
+        .api-terminal .dots span {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: block;
+            border: 2px solid var(--ink);
+        }
+        .api-terminal .dots span:nth-child(1) { background: var(--accent-rose); }
+        .api-terminal .dots span:nth-child(2) { background: var(--accent-amber); }
+        .api-terminal .dots span:nth-child(3) { background: var(--accent-emerald); }
+        .api-terminal pre {
+            padding-top: 36px;
+            scrollbar-width: thin;
+            scrollbar-color: #444 transparent;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        .api-terminal pre::-webkit-scrollbar { width: 6px; height: 6px; }
+        .api-terminal pre::-webkit-scrollbar-thumb { background: #444; border-radius: 0; }
+
+        .endpoint-badge {
+            font-size: 0.75rem;
+            font-weight: 800;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+            padding: 7px 14px;
+            border-radius: 4px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border: 2.5px solid var(--ink);
+            box-shadow: 3px 3px 0 0 var(--shadow-color);
+            color: var(--ink) !important;
+        }
+        .badge-cyan { background: #B7C8FF; }
+        .badge-fuchsia { background: #FFC2E4; }
+        .badge-amber { background: #FFD199; }
+        .badge-emerald { background: #A8F2C0; }
+        .badge-blue { background: #B7C8FF; }
+
+        .btn-primary {
+            background: var(--accent-yellow);
+            color: var(--ink);
+            font-weight: 800;
+            font-size: 1rem;
+            border-radius: 4px;
+            padding: 18px 28px;
+            transition: transform 0.12s ease, box-shadow 0.12s ease;
+            border: 3px solid var(--ink);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            letter-spacing: -0.01em;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 6px 6px 0 0 var(--shadow-color);
+        }
+        .btn-primary:hover {
+            background: #FFE98C;
+            transform: translate(-2px, -2px);
+            box-shadow: 8px 8px 0 0 var(--shadow-color);
+        }
+        .btn-primary:active {
+            transform: translate(4px, 4px);
+            box-shadow: 2px 2px 0 0 var(--shadow-color);
+        }
+
+        .btn-copy {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 11px 20px;
+            font-size: 0.8125rem;
+            font-weight: 700;
+            letter-spacing: 0.01em;
+            border-radius: 4px;
+            background: #FFFFFF;
+            border: 2.5px solid var(--ink);
+            color: var(--ink);
+            cursor: pointer;
+            transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+            white-space: nowrap;
+            font-family: 'Inter', sans-serif;
+            box-shadow: 3px 3px 0 0 var(--shadow-color);
+        }
+        .btn-copy:hover {
+            background: var(--accent-cyan);
+            color: #FFFFFF;
+            transform: translate(-1px, -1px);
+            box-shadow: 4px 4px 0 0 var(--shadow-color);
+        }
+        .btn-copy:active {
+            transform: translate(3px, 3px);
+            box-shadow: 0 0 0 0 var(--shadow-color);
+        }
+        .btn-copy.copied {
+            background: var(--accent-emerald);
+            color: var(--ink);
+            animation: copyPulse 0.5s ease;
+        }
+        @keyframes copyPulse {
+            0%, 100% { transform: translate(-1px, -1px); }
+            50% { transform: translate(-1px, -1px) scale(1.08); }
+        }
+
+        .copy-result-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            z-index: 5;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.01em;
+            border-radius: 4px;
+            background: #1A1A1A;
+            border: 2px solid #6CFFB0;
+            color: #6CFFB0;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            font-family: 'Inter', sans-serif;
+        }
+        .copy-result-btn:hover {
+            background: #6CFFB0;
+            color: #0A0A0A;
+        }
+        .copy-result-btn.copied {
+            background: var(--accent-emerald);
+            border-color: var(--ink);
+            color: var(--ink);
+        }
+
+        .toast-container {
+            position: fixed;
+            bottom: 32px;
+            right: 32px;
+            z-index: 9999;
+            pointer-events: none;
+        }
+        .toast {
+            background: var(--accent-yellow);
+            color: var(--ink);
+            font-size: 0.9375rem;
+            font-weight: 800;
+            padding: 16px 26px;
+            border-radius: 4px;
+            border: 3px solid var(--ink);
+            box-shadow: 6px 6px 0 0 var(--shadow-color);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            opacity: 0;
+            transform: translate(10px, 18px);
+            transition: all 0.3s cubic-bezier(0.22, 0.61, 0.36, 1);
+            pointer-events: auto;
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translate(0, 0);
+        }
+
+        footer {
+            border-top: 3px solid var(--ink);
+            background: #FFFFFF;
+        }
+
+        /* Password Modal Styling */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            border: 3px solid var(--ink);
+            border-radius: 4px;
+            padding: 32px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 12px 12px 0 0 var(--shadow-color);
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h2 {
+            font-size: 1.5rem;
+            font-weight: 900;
+            margin: 0;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--ink);
+        }
+
+        .btn-token-setup {
+            background: var(--accent-cyan);
+            color: #FFFFFF;
+            font-weight: 800;
+            padding: 16px 24px;
+            border: 3px solid var(--accent-cyan);
+            border-radius: 4px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.15s ease;
+            box-shadow: 4px 4px 0 0 var(--shadow-color);
+        }
+
+        .btn-token-setup:hover {
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0 0 var(--shadow-color);
+        }
+
+        .btn-owner-portal {
+            background: #18181b;
+            color: #FFFFFF;
+            font-weight: 800;
+            padding: 16px 24px;
+            border: 3px solid var(--ink);
+            border-radius: 4px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.15s ease;
+            box-shadow: 4px 4px 0 0 var(--shadow-color);
+        }
+
+        .btn-owner-portal:hover {
+            background: #27272a;
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0 0 var(--shadow-color);
+        }
+
+        .badge-magenta {
+            background: var(--accent-magenta);
+            color: #FFFFFF;
+        }
+
+        .modal-large {
+            max-width: 720px !important;
+        }
+    </style>
+</head>    
+<body class="antialiased">    
+    
+    <nav class="sticky top-0 z-50 w-full" style="background: var(--nav-bg); border-bottom: 3px solid var(--ink); transition: background 0.2s ease;">    
+        <div class="max-w-6xl mx-auto px-5 md:px-8 h-20 flex items-center justify-between">    
+            <div class="flex items-center gap-4">    
+                <div class="w-11 h-11 flex items-center justify-center" style="background: var(--accent-yellow); border: 3px solid var(--ink); border-radius: 4px; box-shadow: 4px 4px 0 0 var(--shadow-color);">    
+                    <i data-lucide="terminal" class="w-6 h-6 text-black"></i>    
+                </div>    
+                <span class="font-black text-2xl tracking-tight" style="color: var(--ink);">    
+                    GoMerch <span style="background: var(--accent-magenta); color: #FFFFFF; padding: 0 8px; border: 2px solid var(--ink); border-radius: 4px; display: inline-block;">API Explorer</span>    
+                </span>    
+            </div>    
+            <div class="flex items-center gap-3 sm:gap-4">    
+                <!-- Theme Switcher Dropdown -->
+                <div class="relative flex items-center gap-2 px-3 py-1.5" style="background: var(--card-bg); border: 2.5px solid var(--ink); border-radius: 4px; box-shadow: 3px 3px 0 0 var(--shadow-color);">
+                    <i data-lucide="palette" class="w-4 h-4" style="color: var(--ink);"></i>
+                    <select id="themeSelect" onchange="changeTheme(this.value)" class="bg-transparent font-extrabold text-xs uppercase cursor-pointer outline-none" style="color: var(--ink);">
+                        <option value="neobrutalism" style="background: #FFFFFF; color: #0A0A0A;">⚡ Yellow Brutal</option>
+                        <option value="cyberpunk" style="background: #141729; color: #00FFCC;">🌆 Cyberpunk</option>
+                        <option value="dark" style="background: #1E1E22; color: #F4F4F5;">🌙 Midnight Dark</option>
+                        <option value="emerald" style="background: #0C2E24; color: #A7F3D0;">🌲 Emerald Matrix</option>
+                        <option value="purple" style="background: #1F1138; color: #E9D5FF;">🔮 Purple VIP</option>
+                    </select>
+                </div>
+
+                <div class="hidden sm:flex items-center gap-2 px-4 py-2" style="background: var(--accent-emerald); border: 2.5px solid var(--ink); border-radius: 4px; box-shadow: 3px 3px 0 0 var(--shadow-color);">    
+                    <span class="relative flex h-3 w-3">    
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full" style="background: var(--ink); opacity: 0.5;"></span>    
+                        <span class="relative inline-flex rounded-full h-3 w-3" style="background: var(--ink);"></span>    
+                    </span>    
+                    <span class="text-[0.7rem] font-black uppercase tracking-widest" style="color: var(--ink);">Live Server</span>    
+                </div>    
+            </div>    
+        </div>    
+    </nav>    
+    
+    <main class="max-w-6xl mx-auto p-4 sm:p-6 md:p-10 pb-32">    
+        <div class="space-y-6 sm:space-y-8">    
+        
+            <!-- Top Banner / Buttons -->
+            <div class="premium-card p-6 sm:p-8">
+                <div class="flex items-center justify-between gap-4 flex-wrap">
+                    <div>
+                        <h2 class="text-2xl font-black mb-2">🔑 GoMerch API Key Gateway</h2>
+                        <p class="text-gray-600 text-sm">Gunakan API Key untuk mengakses auto history mutasi QRIS. Owner dapat mengelola API Key & token.</p>
+                    </div>
+                    <div class="flex items-center gap-3 flex-wrap">
+                        <button class="btn-token-setup" onclick="openApiKeyModal()">
+                            <i data-lucide="key" class="w-5 h-5"></i>
+                            Login API Key
+                        </button>
+                        <button class="btn-owner-portal" onclick="openPasswordModal()">
+                            <i data-lucide="shield-check" class="w-5 h-5"></i>
+                            Owner Portal
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="premium-card p-6 sm:p-8" data-endpoint="api-validate">
+                <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+                    <div class="flex items-center gap-4 flex-wrap">
+                        <span class="endpoint-badge badge-cyan">
+                            <i data-lucide="arrow-right-circle" class="w-4 h-4"></i> GET
+                        </span>
+                        <code class="text-lg font-bold text-black tracking-tight">/api/validate</code>
+                    </div>
+                    <button onclick="copyEndpointWithParams('api-validate', '/api/validate', ['token'])" class="btn-copy" id="copy-btn-api-validate">
+                        <i data-lucide="copy" class="w-4 h-4"></i>
+                    </button>
+                </div>
+                <div class="flex flex-col lg:flex-row gap-6 items-stretch">
+                    <div class="w-full lg:w-1/2 space-y-4 flex flex-col">
+                        <div class="glass-input flex items-center px-5">
+                            <span class="param-label min-w-[62px] text-blue-700">token=</span>
+                            <input type="text" id="param-api-validate-token" placeholder="access_token_anda" class="w-full bg-transparent outline-none py-5 text-lg">
+                        </div>
+                        <button onclick="runApiTest('/api/validate', {token: getVal('param-api-validate-token')}, 'res-validate')" class="btn-primary mt-auto py-5">
+                            <i data-lucide="play" class="w-5 h-5"></i> <span>Jalankan</span>
+                        </button>
+                    </div>
+                    <div class="w-full lg:w-1/2 min-h-[220px]">
+                        <div class="api-terminal relative h-full min-h-[220px] rounded-2xl">
+                            <div class="dots"><span></span><span></span><span></span></div>
+                            <button class="copy-result-btn" onclick="copyResult('res-validate')">
+                                <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                            </button>
+                            <pre id="res-validate" class="p-5 sm:p-6 h-full overflow-auto custom-scrollbar" style="padding-top: 42px;">// Response JSON</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+                
+            <div class="premium-card p-6 sm:p-8" data-endpoint="auth-otp">    
+                <div class="flex flex-wrap items-center justify-between gap-4 mb-6">    
+                    <div class="flex items-center gap-4 flex-wrap">    
+                        <span class="endpoint-badge badge-cyan">    
+                            <i data-lucide="arrow-right-circle" class="w-4 h-4"></i> GET    
+                        </span>    
+                        <code class="text-lg font-bold text-black tracking-tight">/auth/otp</code>    
+                    </div>    
+                    <button onclick="copyEndpointWithParams('auth-otp', '/auth/otp', ['phone'])" class="btn-copy" id="copy-btn-auth-otp">    
+                        <i data-lucide="copy" class="w-4 h-4"></i>    
+                    </button>    
+                </div>    
+                <div class="flex flex-col lg:flex-row gap-6 items-stretch">    
+                    <div class="w-full lg:w-1/2 space-y-4 flex flex-col">    
+                        <div class="glass-input flex items-center px-5">    
+                            <span class="param-label min-w-[60px] text-blue-700">phone=</span>    
+                            <input type="text" id="param-auth-otp-phone" placeholder="628xxxxxxxx" class="w-full bg-transparent outline-none py-5 text-lg">    
+                        </div>    
+                        <button onclick="runApiTest('/auth/otp', {phone: getVal('param-auth-otp-phone')}, 'res-otp')" class="btn-primary mt-auto py-5">    
+                            <i data-lucide="play" class="w-5 h-5"></i> <span>Jalankan</span>    
+                        </button>    
+                    </div>    
+                    <div class="w-full lg:w-1/2 min-h-[180px]">    
+                        <div class="api-terminal relative h-full min-h-[180px] rounded-2xl">    
+                            <div class="dots"><span></span><span></span><span></span></div>    
+                            <button class="copy-result-btn" onclick="copyResult('res-otp')">    
+                                <i data-lucide="copy" class="w-3.5 h-3.5"></i>    
+                            </button>    
+                            <pre id="res-otp" class="p-5 sm:p-6 h-full overflow-auto custom-scrollbar" style="padding-top: 42px;">// Response JSON</pre>    
+                        </div>    
+                    </div>    
+                </div>    
+            </div>    
+    
+            <div class="premium-card p-6 sm:p-8" data-endpoint="auth-verify">    
+                <div class="flex flex-wrap items-center justify-between gap-4 mb-6">    
+                    <div class="flex items-center gap-4 flex-wrap">    
+                        <span class="endpoint-badge badge-fuchsia">    
+                            <i data-lucide="arrow-right-circle" class="w-4 h-4"></i> GET    
+                        </span>    
+                        <code class="text-lg font-bold text-black tracking-tight">/auth/verify</code>    
+                    </div>    
+                    <button onclick="copyEndpointWithParams('auth-verify', '/auth/verify', ['otp', 'otp_token'])" class="btn-copy" id="copy-btn-auth-verify">    
+                        <i data-lucide="copy" class="w-4 h-4"></i>    
+                    </button>    
+                </div>    
+                <div class="flex flex-col lg:flex-row gap-6 items-stretch">    
+                    <div class="w-full lg:w-1/2 space-y-4 flex flex-col">    
+                        <div class="glass-input flex items-center px-5">    
+                            <span class="param-label min-w-[46px] text-pink-700">otp=</span>    
+                            <input type="text" id="param-auth-verify-otp" placeholder="1234" class="w-full bg-transparent outline-none py-5 text-lg">    
+                        </div>    
+                        <div class="glass-input flex items-center px-5">    
+                            <span class="param-label min-w-[98px] text-pink-700">otp_token=</span>    
+                            <input type="text" id="param-auth-verify-otp_token" placeholder="token_dari_request_otp" class="w-full bg-transparent outline-none py-5 text-lg">    
+                        </div>    
+                        <button onclick="runApiTest('/auth/verify', {otp: getVal('param-auth-verify-otp'), otp_token: getVal('param-auth-verify-otp_token')}, 'res-verify')" class="btn-primary mt-auto py-5">    
+                            <i data-lucide="play" class="w-5 h-5"></i> <span>Jalankan</span>    
+                        </button>    
+                    </div>    
+                    <div class="w-full lg:w-1/2 min-h-[220px]">    
+                        <div class="api-terminal relative h-full min-h-[220px] rounded-2xl">    
+                            <div class="dots"><span></span><span></span><span></span></div>    
+                            <button class="copy-result-btn" onclick="copyResult('res-verify')">    
+                                <i data-lucide="copy" class="w-3.5 h-3.5"></i>    
+                            </button>    
+                            <pre id="res-verify" class="p-5 sm:p-6 h-full overflow-auto custom-scrollbar" style="padding-top: 42px;">// Response JSON</pre>    
+                        </div>    
+                    </div>    
+                </div>    
+            </div>    
+    
+            <!-- Auto History API with API Key Card -->
+            <div class="premium-card p-6 sm:p-8" data-endpoint="api-history-auto">
+                <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+                    <div class="flex items-center gap-4 flex-wrap">
+                        <span class="endpoint-badge badge-magenta">
+                            <i data-lucide="arrow-right-circle" class="w-4 h-4"></i> GET
+                        </span>
+                        <code class="text-lg font-bold text-black tracking-tight">/api/history/auto/:apikey</code>
+                    </div>
+                    <button onclick="copyEndpointWithParams('api-history-auto', '/api/history/auto/' + (getVal('param-api-history-auto-apikey') || ':apikey'), ['start_time'])" class="btn-copy" id="copy-btn-api-history-auto">
+                        <i data-lucide="copy" class="w-4 h-4"></i>
+                    </button>
+                </div>
+                <div class="flex flex-col lg:flex-row gap-6 items-stretch">
+                    <div class="w-full lg:w-1/2 space-y-4 flex flex-col">
+                        <div class="glass-input flex items-center px-5">
+                            <span class="param-label min-w-[70px] text-pink-700">apikey=</span>
+                            <input type="text" id="param-api-history-auto-apikey" placeholder="BRANN-XXXXX" class="w-full bg-transparent outline-none py-5 text-lg">
+                        </div>
+                        <div class="glass-input flex items-center px-5">
+                            <span class="param-label min-w-[98px]">start_time=</span>
+                            <input type="text" id="param-api-history-auto-start_time" placeholder="YYYY-MM-DD (opsional)" class="w-full bg-transparent outline-none py-5 text-lg">
+                        </div>
+                        <button onclick="runApiTest('/api/history/auto/' + (getVal('param-api-history-auto-apikey') || 'check'), {start_time: getVal('param-api-history-auto-start_time')}, 'res-hist-auto')" class="btn-primary mt-auto py-5">
+                            <i data-lucide="play" class="w-5 h-5"></i> <span>Jalankan Auto History</span>
+                        </button>
+                    </div>
+                    <div class="w-full lg:w-1/2 min-h-[220px]">
+                        <div class="api-terminal relative h-full min-h-[220px] rounded-2xl">
+                            <div class="dots"><span></span><span></span><span></span></div>
+                            <button class="copy-result-btn" onclick="copyResult('res-hist-auto')">
+                                <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                            </button>
+                            <pre id="res-hist-auto" class="p-5 sm:p-6 h-full overflow-auto custom-scrollbar" style="padding-top: 42px;">// Response Auto History JSON</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="premium-card p-6 sm:p-8" data-endpoint="api-history">    
+                <div class="flex flex-wrap items-center justify-between gap-4 mb-6">    
+                    <div class="flex items-center gap-4 flex-wrap">    
+                        <span class="endpoint-badge badge-amber">    
+                            <i data-lucide="arrow-right-circle" class="w-4 h-4"></i> GET    
+                        </span>    
+                        <code class="text-lg font-bold text-black tracking-tight">/api/history</code>    
+                    </div>    
+                    <button onclick="copyEndpointWithParams('api-history', '/api/history', ['token', 'start_time'])" class="btn-copy" id="copy-btn-api-history">    
+                        <i data-lucide="copy" class="w-4 h-4"></i>    
+                    </button>    
+                </div>    
+                <div class="flex flex-col lg:flex-row gap-6 items-stretch">    
+                    <div class="w-full lg:w-1/2 space-y-4 flex flex-col">    
+                        <div class="glass-input flex items-center px-5">    
+                            <span class="param-label min-w-[58px] text-orange-700">token=</span>    
+                            <input type="text" id="param-api-history-token" placeholder="access_token_anda" class="w-full bg-transparent outline-none py-5 text-lg">    
+                        </div>    
+                        <div class="glass-input flex items-center px-5">    
+                            <span class="param-label min-w-[98px]">start_time=</span>    
+                            <input type="text" id="param-api-history-start_time" placeholder="YYYY-MM-DD (opsional)" class="w-full bg-transparent outline-none py-5 text-lg">    
+                        </div>    
+                        <button onclick="runApiTest('/api/history', {token: getVal('param-api-history-token'), start_time: getVal('param-api-history-start_time')}, 'res-hist')" class="btn-primary mt-auto py-5">    
+                            <i data-lucide="play" class="w-5 h-5"></i> <span>Jalankan</span>    
+                        </button>    
+                    </div>    
+                    <div class="w-full lg:w-1/2 min-h-[220px]">    
+                        <div class="api-terminal relative h-full min-h-[220px] rounded-2xl">    
+                            <div class="dots"><span></span><span></span><span></span></div>    
+                            <button class="copy-result-btn" onclick="copyResult('res-hist')">    
+                                <i data-lucide="copy" class="w-3.5 h-3.5"></i>    
+                            </button>    
+                            <pre id="res-hist" class="p-5 sm:p-6 h-full overflow-auto custom-scrollbar" style="padding-top: 42px;">// Response JSON</pre>    
+                        </div>    
+                    </div>    
+                </div>    
+            </div>    
+    
+            <div class="premium-card p-6 sm:p-8" data-endpoint="api-qris-create">    
+                <div class="flex flex-wrap items-center justify-between gap-4 mb-6">    
+                    <div class="flex items-center gap-4 flex-wrap">    
+                        <span class="endpoint-badge badge-emerald">    
+                            <i data-lucide="arrow-right-circle" class="w-4 h-4"></i> GET    
+                        </span>    
+                        <code class="text-lg font-bold text-black tracking-tight">/api/qris/create</code>    
+                    </div>    
+                    <button onclick="copyEndpointWithParams('api-qris-create', '/api/qris/create', ['amount', 'static_qr'])" class="btn-copy" id="copy-btn-api-qris-create">    
+                        <i data-lucide="copy" class="w-4 h-4"></i>    
+                    </button>    
+                </div>    
+                <div class="flex flex-col lg:flex-row gap-6 items-stretch">    
+                    <div class="w-full lg:w-1/2 space-y-4 flex flex-col">    
+                        <div class="glass-input flex items-center px-5">    
+                            <span class="param-label min-w-[72px] text-emerald-700">amount=</span>    
+                            <input type="number" id="param-api-qris-create-amount" placeholder="50000" class="w-full bg-transparent outline-none py-5 text-lg">    
+                        </div>    
+                        <div class="glass-input flex items-center px-5">    
+                            <span class="param-label min-w-[82px] text-emerald-700">static_qr=</span>    
+                            <input type="text" id="param-api-qris-create-static_qr" placeholder="000201010212..." class="w-full bg-transparent outline-none py-5 text-lg">    
+                        </div>    
+                        <button onclick="runApiTest('/api/qris/create', {amount: getVal('param-api-qris-create-amount'), static_qr: getVal('param-api-qris-create-static_qr')}, 'res-qr')" class="btn-primary mt-auto py-5">    
+                            <i data-lucide="play" class="w-5 h-5"></i> <span>Jalankan</span>    
+                        </button>    
+                    </div>    
+                    <div class="w-full lg:w-1/2 min-h-[220px]">    
+                        <div class="api-terminal relative h-full min-h-[220px] rounded-2xl">    
+                            <div class="dots"><span></span><span></span><span></span></div>    
+                            <button class="copy-result-btn" onclick="copyResult('res-qr')">    
+                                <i data-lucide="copy" class="w-3.5 h-3.5"></i>    
+                            </button>    
+                            <pre id="res-qr" class="p-5 sm:p-6 h-full overflow-auto custom-scrollbar" style="padding-top: 42px;">// Response JSON</pre>    
+                        </div>    
+                    </div>    
+                </div>    
+            </div>    
+    
+            <div class="premium-card p-6 sm:p-8" data-endpoint="auth-refresh">    
+                <div class="flex flex-wrap items-center justify-between gap-4 mb-6">    
+                    <div class="flex items-center gap-4 flex-wrap">    
+                        <span class="endpoint-badge badge-blue">    
+                            <i data-lucide="arrow-right-circle" class="w-4 h-4"></i> GET    
+                        </span>    
+                        <code class="text-lg font-bold text-black tracking-tight">/auth/refresh/token</code>    
+                    </div>    
+                    <button onclick="copyEndpointWithParams('auth-refresh', '/auth/refresh/token', ['refresh_token'])" class="btn-copy" id="copy-btn-auth-refresh">    
+                        <i data-lucide="copy" class="w-4 h-4"></i>    
+                    </button>    
+                </div>    
+                <div class="flex flex-col lg:flex-row gap-6 items-stretch">    
+                    <div class="w-full lg:w-1/2 space-y-4 flex flex-col">    
+                        <div class="glass-input flex items-center px-5">    
+                            <span class="param-label min-w-[120px] text-blue-700">refresh_token=</span>    
+                            <input type="text" id="param-auth-refresh-refresh_token" placeholder="refresh_token_anda" class="w-full bg-transparent outline-none py-5 text-lg">    
+                        </div>    
+                        <button onclick="runApiTest('/auth/refresh/token', {refresh_token: getVal('param-auth-refresh-refresh_token')}, 'res-refresh')" class="btn-primary mt-auto py-5">    
+                            <i data-lucide="play" class="w-5 h-5"></i> <span>Jalankan</span>    
+                        </button>    
+                    </div>    
+                    <div class="w-full lg:w-1/2 min-h-[180px]">    
+                        <div class="api-terminal relative h-full min-h-[180px] rounded-2xl">    
+                            <div class="dots"><span></span><span></span><span></span></div>    
+                            <button class="copy-result-btn" onclick="copyResult('res-refresh')">    
+                                <i data-lucide="copy" class="w-3.5 h-3.5"></i>    
+                            </button>    
+                            <pre id="res-refresh" class="p-5 sm:p-6 h-full overflow-auto custom-scrollbar" style="padding-top: 42px;">// Response JSON</pre>    
+                        </div>    
+                    </div>    
+                </div>    
+            </div>    
+    
+        </div>    
+    </main>    
+    
+    <footer class="w-full py-8 px-4 text-center">    
+        <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">    
+            <div class="flex items-center gap-2 text-sm font-semibold" style="color: var(--ink);">    
+                <i data-lucide="code-2" class="w-4 h-4 text-blue-700"></i>    
+                <span class="font-medium tracking-wide">2026 Development By <span class="font-bold text-black">Codex</span></span>    
+            </div>    
+            <div class="flex items-center gap-4 text-xs font-semibold" style="color: var(--text-secondary);">    
+                <span class="flex items-center gap-1"><i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-700"></i> Secure API</span>    
+                <span class="flex items-center gap-1"><i data-lucide="zap" class="w-3.5 h-3.5 text-orange-700"></i> High Performance</span>    
+            </div>    
+        </div>    
+    </footer>    
+    
+    <div class="toast-container">    
+        <div id="toast" class="toast">    
+            <span class="toast-icon">✅</span>    
+            <span id="toast-msg">Copied!</span>    
+        </div>    
+    </div>    
+
+    </div>    
+
+    <!-- Login API Key & User Dashboard Modal -->
+    <div id="apiKeyModal" class="modal">
+        <div class="modal-content modal-large max-h-[92vh] overflow-y-auto p-6 sm:p-8 rounded-2xl border-4 border-black shadow-2xl bg-white">
+            <!-- Modal Header -->
+            <div class="modal-header pb-4 border-b-2 border-slate-100 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-md">
+                        <i data-lucide="key-round" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-black tracking-tight text-slate-900">User API Key Portal</h2>
+                        <p class="text-xs text-slate-500 font-medium">Kelola Token GoPay & Dokumentasi API Auto History</p>
+                    </div>
+                </div>
+                <button class="modal-close w-8 h-8 rounded-lg hover:bg-slate-100 flex items-center justify-center font-bold text-slate-500 hover:text-black transition-colors" onclick="closeApiKeyModal()">×</button>
+            </div>
+            
+            <div class="space-y-6 pt-4">
+                <!-- Step 1: Login Form (If not logged in) -->
+                <div id="apiKeyLoginFormSection">
+                    <div class="p-6 rounded-xl border-2 border-indigo-200 bg-gradient-to-br from-indigo-50/50 to-purple-50/50 space-y-4">
+                        <div class="flex items-center gap-2">
+                            <span class="px-2.5 py-1 text-[10px] font-black uppercase tracking-wider bg-indigo-600 text-white rounded-md">Verifikasi</span>
+                            <h3 class="font-bold text-slate-800 text-sm">Masukan API Key Anda</h3>
+                        </div>
+                        <form id="apiKeyForm" class="space-y-3" onsubmit="handleApiKeyLogin(event)">
+                            <div class="flex flex-col sm:flex-row gap-2">
+                                <div class="relative flex-grow">
+                                    <input type="text" id="apiKeyInput" placeholder="Masukkan API Key (Contoh: BRANN-XXXXXXXX)" class="w-full px-4 py-3 bg-white border-2 border-slate-900 rounded-xl font-mono text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm" required>
+                                </div>
+                                <button type="submit" class="btn-primary py-3 px-6 rounded-xl font-extrabold whitespace-nowrap bg-indigo-600 text-white hover:bg-indigo-700 shadow-md flex items-center justify-center gap-2">
+                                    <i data-lucide="check-circle" class="w-4 h-4"></i>
+                                    Login & Masuk
+                                </button>
+                            </div>
+                        </form>
+                        <p class="text-xs text-slate-500">Belum punya API Key? Hubungi Owner untuk mendapatkan API Key khusus Anda.</p>
+                    </div>
+                </div>
+
+                <!-- Step 2: Dashboard View (When logged in) -->
+                <div id="activeKeyBanner" class="hidden space-y-6">
+                    <!-- User Profile & Status Card -->
+                    <div class="p-5 rounded-xl border-2 border-slate-900 bg-slate-900 text-white shadow-lg space-y-4">
+                        <div class="flex items-center justify-between flex-wrap gap-3">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-emerald-400">
+                                    <i data-lucide="user-check" class="w-5 h-5"></i>
+                                </div>
+                                <div>
+                                    <span class="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 block">Sesi Terhubung</span>
+                                    <div class="flex items-center gap-2">
+                                        <span id="userKeyLabel" class="font-black text-base text-white">API Key User</span>
+                                        <span class="px-2 py-0.5 text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 rounded-full flex items-center gap-1">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Active Key
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <button onclick="logoutApiKey()" class="px-3 py-1.5 text-xs font-bold bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-500/30 rounded-lg transition-colors flex items-center gap-1">
+                                <i data-lucide="log-out" class="w-3.5 h-3.5"></i> Logout Key
+                            </button>
+                        </div>
+
+                        <div class="p-3 rounded-lg bg-slate-800/90 border border-slate-700/80 flex items-center justify-between flex-wrap gap-2 text-xs font-mono">
+                            <div class="flex items-center gap-2 overflow-x-auto">
+                                <span class="text-slate-400 font-bold">KEY:</span>
+                                <code id="activeKeyText" class="text-emerald-400 font-extrabold text-sm select-all"></code>
+                            </div>
+                            <button onclick="copyToClipboard(document.getElementById('activeKeyText').textContent)" class="px-2.5 py-1 text-[11px] font-bold bg-slate-700 hover:bg-slate-600 text-slate-200 rounded flex items-center gap-1">
+                                <i data-lucide="copy" class="w-3 h-3"></i> Copy
+                            </button>
+                        </div>
+
+                        <!-- Token Status Badge -->
+                        <div id="userKeyTokenStatusText" class="text-xs p-3 rounded-lg bg-slate-800/50 border border-slate-700/50 text-slate-300 flex items-center gap-2">
+                            <i data-lucide="loader" class="w-4 h-4 animate-spin text-amber-400"></i> Memuat status token GoPay...
+                        </div>
+                    </div>
+
+                    <!-- User GoPay Token Setup Panel -->
+                    <div class="p-6 rounded-xl border-2 border-amber-300 bg-amber-50/50 space-y-4 shadow-sm">
+                        <div class="flex items-center justify-between flex-wrap gap-2">
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-8 h-8 rounded-lg bg-amber-500 text-white flex items-center justify-center shadow-sm">
+                                    <i data-lucide="zap" class="w-4 h-4"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-black text-sm text-slate-900">Setup Token GoPay Merchant</h4>
+                                    <p class="text-xs text-slate-600">Kelola access_token & refresh_token akun GoPay Anda sendiri.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <form onsubmit="handleUserTokenSave(event)" class="space-y-4">
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="block text-xs font-extrabold text-slate-800 uppercase tracking-wider mb-1">Access Token GoPay</label>
+                                    <input type="text" id="userAccessTokenInput" placeholder="eyJhbGciOi... (access_token_gopay)" class="w-full px-3.5 py-2.5 bg-white border-2 border-slate-300 rounded-lg font-mono text-xs focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 shadow-sm" required>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-extrabold text-slate-800 uppercase tracking-wider mb-1">Refresh Token GoPay</label>
+                                    <input type="text" id="userRefreshTokenInput" placeholder="eyJhbGciOi... (refresh_token_gopay)" class="w-full px-3.5 py-2.5 bg-white border-2 border-slate-300 rounded-lg font-mono text-xs focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 shadow-sm" required>
+                                </div>
+                            </div>
+                            <button type="submit" class="w-full py-3 px-4 rounded-xl font-extrabold text-xs bg-amber-500 hover:bg-amber-600 text-black border-2 border-slate-900 shadow-md transition-transform hover:-translate-y-0.5 flex items-center justify-center gap-2">
+                                <i data-lucide="save" class="w-4 h-4"></i> Simpan Token GoPay Saya
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- API Integration Guide & Interactive Code Tabs -->
+                <div class="rounded-xl border-2 border-slate-900 overflow-hidden bg-slate-900 text-slate-100 shadow-lg space-y-0">
+                    <div class="p-4 bg-slate-800 border-b border-slate-700 flex items-center justify-between flex-wrap gap-2">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="code-2" class="w-5 h-5 text-cyan-400"></i>
+                            <h3 class="font-black text-sm text-white">Panduan Integrasi & Code Playground</h3>
+                        </div>
+                        <span class="text-[10px] font-mono font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 px-2.5 py-1 rounded-md">GET /api/history/auto/:apikey</span>
+                    </div>
+
+                    <div class="p-5 space-y-4 text-xs">
+                        <p class="text-slate-300 leading-relaxed">
+                            Panggil URL di bawah ini dari server atau script bot Anda untuk mendapatkan data transaksi mutasi QRIS secara real-time. Token dipelihara dan di-refresh otomatis oleh sistem.
+                        </p>
+
+                        <!-- URL Box -->
+                        <div class="space-y-2">
+                            <span class="font-extrabold text-slate-400 uppercase tracking-wider text-[10px] block">📌 URL Direct Endpoint (Siap Pakai):</span>
+                            <div class="p-3 bg-black border border-slate-700 rounded-lg font-mono text-emerald-400 text-xs flex items-center justify-between gap-2 overflow-x-auto">
+                                <code class="select-all">https://brann-merchant-production.up.railway.app/api/history/auto/<span class="guideKeyParam text-cyan-300 font-bold">BRANN-XXXXX</span></code>
+                                <button onclick="copyToClipboard('https://brann-merchant-production.up.railway.app/api/history/auto/' + (localStorage.getItem('merchantApiKey') || 'BRANN-XXXXX'))" class="px-2.5 py-1 text-[10px] bg-slate-800 hover:bg-slate-700 text-white rounded font-bold whitespace-nowrap">Copy URL</button>
+                            </div>
+                        </div>
+
+                        <!-- Code Snippets Tabs -->
+                        <div class="space-y-3 pt-2">
+                            <span class="font-extrabold text-slate-400 uppercase tracking-wider text-[10px] block">⚡ Contoh Script Integrasi:</span>
+                            
+                            <!-- JavaScript Fetch -->
+                            <div class="space-y-1">
+                                <div class="flex items-center justify-between text-[11px] text-slate-400">
+                                    <span>JavaScript (Node.js / Browser)</span>
+                                    <button onclick="copyCodeSnippet('code-js')" class="text-cyan-400 hover:underline text-[10px]">Copy Code</button>
+                                </div>
+                                <pre id="code-js" class="p-3.5 bg-black/90 border border-slate-800 rounded-lg font-mono text-[11px] text-slate-200 overflow-x-auto leading-relaxed">const res = await fetch('https://brann-merchant-production.up.railway.app/api/history/auto/<span class="guideKeyParam">BRANN-XXXXX</span>');
+const data = await res.json();
+console.log(data.data); // Array data mutasi QRIS valid</pre>
+                            </div>
+
+                            <!-- cURL -->
+                            <div class="space-y-1 pt-1">
+                                <div class="flex items-center justify-between text-[11px] text-slate-400">
+                                    <span>cURL (Terminal CLI)</span>
+                                    <button onclick="copyCodeSnippet('code-curl')" class="text-cyan-400 hover:underline text-[10px]">Copy Code</button>
+                                </div>
+                                <pre id="code-curl" class="p-3.5 bg-black/90 border border-slate-800 rounded-lg font-mono text-[11px] text-emerald-400 overflow-x-auto">curl -s "https://brann-merchant-production.up.railway.app/api/history/auto/<span class="guideKeyParam">BRANN-XXXXX</span>"</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Password / Owner Modal -->
+    <div id="passwordModal" class="modal">
+        <div class="modal-content modal-large max-h-[90vh] overflow-y-auto">
+            <div class="modal-header">
+                <h2 id="ownerModalTitle">🔐 Owner Verification</h2>
+                <button class="modal-close" onclick="closePasswordModal()">×</button>
+            </div>
+
+            <!-- Password Form (Step 1) -->
+            <form id="passwordForm" class="space-y-4" onsubmit="verifyPassword(event)">
+                <div>
+                    <label class="block text-sm font-bold mb-2">Masukan Password Owner/Admin</label>
+                    <input type="password" id="passwordInput" placeholder="Enter owner password" class="w-full px-4 py-3 border-2 border-black rounded-sm focus:outline-none focus:border-blue-500" required>
+                </div>
+                <button type="submit" class="btn-primary w-full">
+                    <i data-lucide="lock" class="w-5 h-5"></i>
+                    Verify & Access Owner Panel
+                </button>
+            </form>
+
+            <!-- Owner Panel (Step 2 - Hidden until password verified) -->
+            <div id="ownerPanelContainer" class="hidden space-y-6">
+                <!-- Action bar: Token Setup link -->
+                <div class="flex items-center justify-between p-4 bg-yellow-50 border-2 border-yellow-400 rounded-sm">
+                    <div>
+                        <h4 class="font-black text-sm">⚡ Setup Tokens GoMerchant</h4>
+                        <p class="text-xs text-gray-600">Atur access_token & refresh_token GoPay utama.</p>
+                    </div>
+                    <a href="/auth/token-setup" class="btn-primary text-xs py-2 px-4 whitespace-nowrap">
+                        Setup GoPay Tokens &rarr;
+                    </a>
+                </div>
+
+                <!-- API Key Management Header -->
+                <div class="border-t-2 border-black pt-4">
+                    <h3 class="font-black text-lg mb-2">🔑 Owner API Key Management</h3>
+                    <p class="text-xs text-gray-600 mb-4">Tambah, hapus, dan kelola daftar API Key aktif untuk pengguna.</p>
+
+                    <!-- Add New API Key Form -->
+                    <form onsubmit="handleOwnerAddApiKey(event)" class="space-y-3 p-4 border-2 border-black rounded-sm bg-slate-50 mb-6">
+                        <span class="font-bold text-sm block">➕ Tambah API Key Baru (addapikey)</span>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <input type="text" id="newKeyLabel" placeholder="Label / Nama Pemilik Key (Contoh: Web Store A)" class="px-3 py-2 border-2 border-black rounded-sm text-sm" required>
+                            <input type="text" id="newCustomKey" placeholder="Custom Key (Opsional - Kosongkan untuk auto-generate)" class="px-3 py-2 border-2 border-black rounded-sm text-sm font-mono">
+                        </div>
+                        <button type="submit" class="btn-primary text-sm py-2 w-full sm:w-auto">
+                            <i data-lucide="plus-circle" class="w-4 h-4"></i> Buat API Key
+                        </button>
+                    </form>
+
+                    <!-- API Key List -->
+                    <div class="space-y-2">
+                        <span class="font-bold text-sm block">📋 Daftar API Key Aktif (list apikey)</span>
+                        <div id="ownerKeyList" class="space-y-2 max-h-60 overflow-y-auto pr-1">
+                            <div class="text-xs text-gray-500 italic">Memuat daftar API Key...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>    
+        lucide.createIcons();    
+    
+        const BASE_URL = window.location.origin;
+
+        // API Key Modal Functions
+        function openApiKeyModal() {
+            document.getElementById('apiKeyModal').classList.add('show');
+            const saved = localStorage.getItem('merchantApiKey');
+            if (saved) {
+                document.getElementById('apiKeyInput').value = saved;
+                updateActiveKeyUI(saved);
+            }
+        }
+
+        function closeApiKeyModal() {
+            document.getElementById('apiKeyModal').classList.remove('show');
+        }
+
+        function updateActiveKeyUI(key) {
+            const loginSection = document.getElementById('apiKeyLoginFormSection');
+            const banner = document.getElementById('activeKeyBanner');
+            const text = document.getElementById('activeKeyText');
+
+            if (key) {
+                if (loginSection) loginSection.classList.add('hidden');
+                if (banner) banner.classList.remove('hidden');
+                if (text) text.textContent = key;
+
+                document.querySelectorAll('.guideKeyParam').forEach(el => {
+                    el.textContent = key;
+                });
+
+                const paramInput = document.getElementById('param-api-history-auto-apikey');
+                if (paramInput) paramInput.value = key;
+
+                fetchUserKeyInfo(key);
+            } else {
+                if (loginSection) loginSection.classList.remove('hidden');
+                if (banner) banner.classList.add('hidden');
+                if (text) text.textContent = '';
+
+                document.querySelectorAll('.guideKeyParam').forEach(el => {
+                    el.textContent = 'BRANN-XXXXX';
+                });
+            }
+        }
+
+        async function fetchUserKeyInfo(key) {
+            const statusEl = document.getElementById('userKeyTokenStatusText');
+            const labelEl = document.getElementById('userKeyLabel');
+
+            try {
+                const res = await fetch('/api/auth/user-key-info', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ apikey: key })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    if (labelEl && data.label) {
+                        labelEl.textContent = data.label;
+                    }
+                    if (statusEl) {
+                        if (data.hasTokens) {
+                            statusEl.innerHTML = `<i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400"></i><span class="text-emerald-400 font-bold">Token GoPay Merchant Aktif</span> <span class="text-slate-400">(Terakhir Refresh: ${data.lastRefresh ? new Date(data.lastRefresh).toLocaleString('id-ID') : '-'})</span>`;
+                        } else {
+                            statusEl.innerHTML = `<i data-lucide="alert-triangle" class="w-4 h-4 text-amber-400"></i><span class="text-amber-400 font-bold">Token GoPay Belum Di-Setup</span> <span class="text-slate-300">— Isi form di bawah ini agar API Key aktif!</span>`;
+                        }
+                        lucide.createIcons();
+                    }
+                } else {
+                    if (statusEl) statusEl.innerHTML = `<span class="text-red-400 font-bold">❌ Error: ${data.error}</span>`;
+                }
+            } catch (e) {
+                if (statusEl) statusEl.innerHTML = `<span class="text-red-400 font-bold">❌ Gagal memuat status: ${e.message}</span>`;
+            }
+        }
+
+        function copyCodeSnippet(elementId) {
+            const el = document.getElementById(elementId);
+            if (!el) return;
+            const text = el.innerText || el.textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('Code snippet disalin!', '📋');
+            });
+        }
+
+        async function handleUserTokenSave(e) {
+            e.preventDefault();
+            const apikey = localStorage.getItem('merchantApiKey');
+            const accessToken = getVal('userAccessTokenInput');
+            const refreshToken = getVal('userRefreshTokenInput');
+
+            if (!apikey) {
+                showToast('❌ Login dengan API Key terlebih dahulu!', '❌');
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/auth/user-tokens', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ apikey, accessToken, refreshToken })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast('✅ Token GoPay berhasil disimpan!', '✅');
+                    document.getElementById('userAccessTokenInput').value = '';
+                    document.getElementById('userRefreshTokenInput').value = '';
+                    fetchUserKeyInfo(apikey);
+                } else {
+                    showToast('❌ ' + data.error, '❌');
+                }
+            } catch (err) {
+                showToast('❌ Error: ' + err.message, '❌');
+            }
+        }
+
+        async function handleApiKeyLogin(e) {
+            e.preventDefault();
+            const apikey = getVal('apiKeyInput');
+            if (!apikey) return;
+
+            try {
+                const response = await fetch('/api/auth/login-apikey', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ apikey })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    localStorage.setItem('merchantApiKey', apikey);
+                    updateActiveKeyUI(apikey);
+                    showToast('✅ API Key valid & tersimpan!', '✅');
+                } else {
+                    showToast('❌ ' + data.error, '❌');
+                }
+            } catch (err) {
+                showToast('❌ Gagal verifikasi key: ' + err.message, '❌');
+            }
+        }
+
+        function logoutApiKey() {
+            localStorage.removeItem('merchantApiKey');
+            document.getElementById('apiKeyInput').value = '';
+            updateActiveKeyUI(null);
+            showToast('Logged out dari API Key', 'ℹ️');
+        }
+
+        // Owner Modal & API Key Management Functions
+        function openPasswordModal() {
+            document.getElementById('passwordModal').classList.add('show');
+            document.getElementById('passwordInput').focus();
+        }
+
+        function closePasswordModal() {
+            document.getElementById('passwordModal').classList.remove('show');
+            document.getElementById('passwordForm').reset();
+        }
+
+        async function verifyPassword(e) {
+            e.preventDefault();
+            const password = document.getElementById('passwordInput').value;
+
+            try {
+                const response = await fetch('/api/auth/verify-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    showToast('✅ Password verified! Membuka Owner Panel...', '✅');
+                    document.getElementById('passwordForm').classList.add('hidden');
+                    document.getElementById('ownerPanelContainer').classList.remove('hidden');
+                    document.getElementById('ownerModalTitle').textContent = '🛡️ Owner Management Portal';
+                    fetchOwnerApiKeys();
+                } else {
+                    showToast('❌ ' + data.error, '❌');
+                }
+            } catch (e) {
+                showToast('❌ Error: ' + e.message, '❌');
+            }
+        }
+
+        async function fetchOwnerApiKeys() {
+            const listEl = document.getElementById('ownerKeyList');
+            try {
+                const res = await fetch('/api/auth/apikeys');
+                const data = await res.json();
+                if (data.success) {
+                    renderOwnerApiKeys(data.keys);
+                } else {
+                    listEl.innerHTML = `<div class="text-xs text-red-500 font-bold">Gagal memuat API Keys: ${data.error}</div>`;
+                }
+            } catch (e) {
+                listEl.innerHTML = `<div class="text-xs text-red-500 font-bold">Error: ${e.message}</div>`;
+            }
+        }
+
+        function renderOwnerApiKeys(keys) {
+            const listEl = document.getElementById('ownerKeyList');
+            if (!keys || keys.length === 0) {
+                listEl.innerHTML = `<div class="text-xs text-gray-500 italic p-3 border-2 border-dashed border-gray-300 rounded-sm">Belum ada API Key aktif. Silahkan buat di atas!</div>`;
+                return;
+            }
+
+            listEl.innerHTML = keys.map(k => `
+                <div class="p-3 bg-white border-2 border-black rounded-sm flex items-center justify-between gap-3 flex-wrap text-xs">
+                    <div>
+                        <div class="font-bold text-sm text-black flex items-center gap-2 flex-wrap">
+                            <span>${k.label || 'API Key'}</span>
+                            <span class="text-[10px] bg-slate-200 px-2 py-0.5 rounded font-mono">${k.createdAt ? new Date(k.createdAt).toLocaleDateString('id-ID') : ''}</span>
+                            ${k.tokens ? '<span class="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded">GoPay: Ready</span>' : '<span class="text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded">GoPay: Belum Setup</span>'}
+                        </div>
+                        <code class="font-mono text-blue-700 font-bold select-all">${k.key}</code>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="copyToClipboard('${k.key}')" class="px-2 py-1 bg-slate-100 border border-black rounded font-bold hover:bg-slate-200">
+                            📋 Copy
+                        </button>
+                        <button onclick="handleOwnerDeleteApiKey('${k.key}')" class="px-2 py-1 bg-red-500 text-white border border-black rounded font-bold hover:bg-red-600">
+                            🗑️ Del
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function handleOwnerAddApiKey(e) {
+            e.preventDefault();
+            const label = getVal('newKeyLabel');
+            const customKey = getVal('newCustomKey');
+
+            try {
+                const response = await fetch('/api/auth/apikeys/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ label, customKey })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    showToast('✅ API Key berhasil dibuat!', '✅');
+                    document.getElementById('newKeyLabel').value = '';
+                    document.getElementById('newCustomKey').value = '';
+                    fetchOwnerApiKeys();
+                } else {
+                    showToast('❌ ' + data.error, '❌');
+                }
+            } catch (err) {
+                showToast('❌ Error: ' + err.message, '❌');
+            }
+        }
+
+        async function handleOwnerDeleteApiKey(key) {
+            if (!confirm(`Yakin ingin menghapus API Key:\n${key}?`)) return;
+
+            try {
+                const response = await fetch('/api/auth/apikeys/delete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ key })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    showToast('✅ API Key berhasil dihapus!', '🗑️');
+                    fetchOwnerApiKeys();
+                } else {
+                    showToast('❌ ' + data.error, '❌');
+                }
+            } catch (err) {
+                showToast('❌ Error: ' + err.message, '❌');
+            }
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('API Key disalin!', '📋');
+            });
+        }
+
+        // Close modal when clicking outside
+        ['passwordModal', 'apiKeyModal'].forEach(id => {
+            document.getElementById(id)?.addEventListener('click', (e) => {
+                if (e.target.id === id) {
+                    if (id === 'passwordModal') closePasswordModal();
+                    if (id === 'apiKeyModal') closeApiKeyModal();
+                }
+            });
+        });    
+    
+        function getVal(id) {    
+            const el = document.getElementById(id);    
+            return el ? el.value.trim() : '';    
+        }    
+    
+        let toastTimer;    
+        function showToast(message, icon = '✅') {    
+            const toast = document.getElementById('toast');    
+            const msg = document.getElementById('toast-msg');    
+            const iconEl = toast.querySelector('.toast-icon');    
+            iconEl.textContent = icon;    
+            msg.textContent = message;    
+            toast.classList.add('show');    
+            clearTimeout(toastTimer);    
+            toastTimer = setTimeout(() => {    
+                toast.classList.remove('show');    
+            }, 2400);    
+        }    
+    
+        function copyEndpointWithParams(endpointKey, path, paramNames) {    
+            const params = {};    
+            let filledCount = 0;    
+            paramNames.forEach(pName => {    
+                const inputId = `param-${endpointKey}-${pName}`;    
+                const val = getVal(inputId);    
+                params[pName] = val;     
+                if (val !== '') filledCount++;    
+            });    
+            const query = new URLSearchParams(params).toString();    
+            const fullUrl = query ? `${BASE_URL}${path}?${query}` : `${BASE_URL}${path}`;    
+            navigator.clipboard.writeText(fullUrl).then(() => {    
+                const btn = document.getElementById(`copy-btn-${endpointKey}`);    
+                if (btn) {    
+                    btn.classList.add('copied');    
+                    setTimeout(() => btn.classList.remove('copied'), 1500);    
+                }    
+                const suffix = filledCount > 0 ? ` (+ ${filledCount} param)` : '';    
+                showToast(`URL disalin${suffix}`, '📋');    
+            }).catch(() => {    
+                const ta = document.createElement('textarea');    
+                ta.value = fullUrl;    
+                ta.style.position = 'fixed'; ta.style.opacity = '0';    
+                document.body.appendChild(ta);    
+                ta.select();    
+                try { document.execCommand('copy'); showToast('URL disalin', '📋'); } catch (e) { showToast('Gagal menyalin', '⚠️'); }    
+                document.body.removeChild(ta);    
+            });    
+        }    
+    
+        function copyResult(preId) {    
+            const pre = document.getElementById(preId);    
+            if (!pre) return;    
+            const text = pre.innerText || pre.textContent;    
+            navigator.clipboard.writeText(text).then(() => {    
+                const terminal = pre.closest('.api-terminal');    
+                const btn = terminal ? terminal.querySelector('.copy-result-btn') : null;    
+                if (btn) {    
+                    btn.classList.add('copied');    
+                    setTimeout(() => btn.classList.remove('copied'), 1500);    
+                }    
+                showToast('Result disalin', '📋');    
+            }).catch(() => {    
+                const ta = document.createElement('textarea');    
+                ta.value = text;    
+                ta.style.position = 'fixed'; ta.style.opacity = '0';    
+                document.body.appendChild(ta);    
+                ta.select();    
+                try { document.execCommand('copy'); showToast('Result disalin', '📋'); } catch (e) { showToast('Gagal menyalin', '⚠️'); }    
+                document.body.removeChild(ta);    
+            });    
+        }    
+    
+        async function fetchGET(url, params = {}) {    
+            Object.keys(params).forEach(k => {    
+                if (params[k] === '' || params[k] === null || params[k] === undefined) delete params[k];    
+            });    
+            const query = new URLSearchParams(params).toString();    
+            const fullUrl = query ? `${url}?${query}` : url;    
+            try {    
+                const res = await fetch(fullUrl);    
+                const data = await res.json();    
+                return data;    
+            } catch (error) {    
+                return {    
+                    success: false,    
+                    error_type: "Network / CORS Error",    
+                    message: error.message,    
+                    attempted_url: fullUrl,    
+                    hint: "Pastikan backend server berjalan dan mengizinkan CORS."    
+                };    
+            }    
+        }    
+    
+        async function runApiTest(endpoint, params, resultElementId) {    
+            const resEl = document.getElementById(resultElementId);    
+            resEl.innerText = "// Loading...";    
+            resEl.style.color = '#fbbf24';    
+            try {    
+                const res = await fetchGET(endpoint, params);    
+                resEl.style.color = res.error_type === "Network / CORS Error" ? '#f87171' : '#b4f0c8';    
+                resEl.innerText = JSON.stringify(res, null, 2);    
+            } catch (e) {    
+                resEl.style.color = '#f87171';    
+                resEl.innerText = "// Error:\n" + e.message;    
+            }    
+        }    
+    
+        function changeTheme(themeName) {
+            document.documentElement.setAttribute('data-theme', themeName);
+            localStorage.setItem('merchantTheme', themeName);
+            const themeSelect = document.getElementById('themeSelect');
+            if (themeSelect) themeSelect.value = themeName;
+            showToast(`Tema diubah: ${themeName.toUpperCase()}`, '🎨');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {    
+            lucide.createIcons();
+            const savedTheme = localStorage.getItem('merchantTheme') || 'neobrutalism';
+            changeTheme(savedTheme);
+            const savedKey = localStorage.getItem('merchantApiKey');
+            if (savedKey) {
+                updateActiveKeyUI(savedKey);
+            }
+        });    
+        const observer = new MutationObserver(() => { lucide.createIcons(); });    
+        observer.observe(document.getElementById('toast'), { childList: true, subtree: true });    
+    </script>    
+</body>    
+</html>    
