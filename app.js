@@ -35,8 +35,8 @@ app.set('views', path.join(__dirname, 'views'));
     console.log('✅ Admin password initialized (default|env).');
   }
 
-  // ⏱️ Mulai background auto-refresh loop untuk seluruh user API Keys (setiap 12 menit)
-  apiKeyManager.startAutoRefreshLoop(sdk, 12 * 60 * 1000);
+  // ⏱️ Mulai background auto-refresh loop untuk seluruh user API Keys (setiap 5 menit)
+  apiKeyManager.startAutoRefreshLoop(sdk, 5 * 60 * 1000);
 })();
 
 // ================= FUNGSI UPLOAD =================
@@ -463,6 +463,16 @@ const handleAutoHistory = async (req, res) => {
                 success: false,
                 error: 'Token GoPay untuk API Key ini belum di-setup! Silahkan lakukan Setup Token di portal Login API Key.'
             });
+        }
+
+        // Proactively ensure valid token before API call
+        if (reqApiKey && apiKeyManager.isValid(reqApiKey)) {
+            await apiKeyManager.ensureValidToken(sdk, reqApiKey);
+            const freshTokens = apiKeyManager.getTokens(reqApiKey);
+            if (freshTokens && freshTokens.accessToken) {
+                userTokens.accessToken = freshTokens.accessToken;
+                if (freshTokens.refreshToken) userTokens.refreshToken = freshTokens.refreshToken;
+            }
         }
 
         const { accessToken, refreshToken } = userTokens;
