@@ -5,37 +5,52 @@ const path = require('path');
 class FirebaseManager {
   constructor() {
     this.isInitialized = false;
-    this.db = null;
+    this.firestore = null;
+    this.rtdb = null;
     this.projectId = null;
+    this.databaseURL = null;
     this.init();
   }
 
-  init() {
+  init(customConfig = null) {
     if (admin.apps.length > 0) {
-      this.db = admin.firestore();
+      try {
+        this.firestore = admin.firestore();
+      } catch (e) {}
+      try {
+        this.rtdb = admin.database();
+      } catch (e) {}
       this.isInitialized = true;
       return;
     }
 
     let serviceAccount = null;
+    let databaseURL = process.env.FIREBASE_DATABASE_URL || null;
+
+    if (customConfig && customConfig.serviceAccount) {
+      serviceAccount = customConfig.serviceAccount;
+      if (customConfig.databaseURL) databaseURL = customConfig.databaseURL;
+    }
 
     // 1. Check local file candidates
-    const candidateFiles = [
-      path.join(__dirname, 'serviceAccountKey.json'),
-      path.join(__dirname, 'data', 'serviceAccountKey.json'),
-      path.join(process.cwd(), 'serviceAccountKey.json'),
-      path.join('/data', 'serviceAccountKey.json')
-    ];
+    if (!serviceAccount) {
+      const candidateFiles = [
+        path.join(__dirname, 'serviceAccountKey.json'),
+        path.join(__dirname, 'data', 'serviceAccountKey.json'),
+        path.join(process.cwd(), 'serviceAccountKey.json'),
+        path.join('/data', 'serviceAccountKey.json')
+      ];
 
-    for (const filePath of candidateFiles) {
-      if (fs.existsSync(filePath)) {
-        try {
-          const raw = fs.readFileSync(filePath, 'utf8');
-          serviceAccount = JSON.parse(raw);
-          console.log(`🔥 [Firebase] Loading Service Account from file: ${filePath}`);
-          break;
-        } catch (e) {
-          console.warn(`⚠️ [Firebase] Failed to parse key file ${filePath}:`, e.message);
+      for (const filePath of candidateFiles) {
+        if (fs.existsSync(filePath)) {
+          try {
+            const raw = fs.readFileSync(filePath, 'utf8');
+            serviceAccount = JSON.parse(raw);
+            console.log(`🔥 [Firebase] Loading Service Account from file: ${filePath}`);
+            break;
+          } catch (e) {
+            console.warn(`⚠️ [Firebase] Failed to parse key file ${filePath}:`, e.message);
+          }
         }
       }
     }
@@ -47,7 +62,6 @@ class FirebaseManager {
         if (val.startsWith('{')) {
           serviceAccount = JSON.parse(val);
         } else {
-          // Attempt base64 decode
           const decoded = Buffer.from(val, 'base64').toString('utf8');
           serviceAccount = JSON.parse(decoded);
         }
@@ -74,13 +88,35 @@ class FirebaseManager {
     }
 
     try {
-      admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount)
-      });
-      this.db = admin.firestore();
       this.projectId = serviceAccount.project_id || 'unknown';
+      this.databaseURL = databaseURL || process.env.FIREBASE_DATABASE_URL || (this.projectId ? `https://${this.projectId}-default-rtdb.firebaseio.com` : null);
+
+      const appConfig = {
+        credential: admin.credential.cert(serviceAccount)
+      };
+      if (this.databaseURL) {
+        appConfig.databaseURL = this.databaseURL;
+      }
+
+      admin.initializeApp(appConfig);
+
+      try {
+        this.firestore = admin.firestore();
+      } catch (e) {
+        console.warn('⚠️ [Firebase] Firestore init warning:', e.message);
+      }
+
+      try {
+        this.rtdb = admin.database();
+      } catch (e) {
+        // Realtime DB optional if databaseURL not active
+      }
+
       this.isInitialized = true;
-      console.log(`✅ [Firebase] Cloud Firestore connected successfully! Project ID: ${this.projectId}`);
+      console.log(`✅ [Firebase] Firebase connected successfully! Project ID: ${this.projectId}`);
+      if (this.databaseURL) {
+        console.log(`📡 [Firebase] Realtime Database URL: ${this.databaseURL}`);
+      }
     } catch (err) {
       console.error('❌ [Firebase] Initialization failed:', err.message);
       this.isInitialized = false;
@@ -88,79 +124,151 @@ class FirebaseManager {
   }
 
   isReady() {
-    return this.isInitialized && this.db !== null;
+    return this.isInitialized && (this.firestore !== null || this.rtdb !== null);
   }
 
-  // Save tokens to Firestore
+  // Save tokens to Firestore & Realtime DB
   async saveTokens(tokens) {
     if (!this.isReady()) return false;
-    try {
-      const docRef = this.db.collection('gopay_config').doc('tokens');
-      await docRef.set({
-        ...tokens,
-        updatedAt: admin.firestore.FieldValue.serverTimestamp()
-      }, { merge: true });
-      console.log('☁️ [Firebase] Tokens successfully synced to Cloud Firestore!');
-      return true;
-    } catch (e) {
-      console.error('❌ [Firebase] Failed to save tokens to Firestore:', e.message);
-      return false;
+    let saved = false;
+
+    // 1. Try Cloud Firestore
+    if (this.firestore) {
+      try {
+        const docRef = this.firestore.collection('gopay_config').doc('tokens');
+        await docRef.set({
+          ...tokens,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+        saved = true;
+        console.log('☁️ [Firebase] Tokens synced to Cloud Firestore!');
+      } catch (e) {
+        console.warn('⚠️ [Firebase] Firestore token save warning:', e.message);
+      }
     }
+
+    // 2. Try Realtime Database backup
+    if (this.rtdb) {
+      try {
+        await this.rtdb.ref('gopay_config/tokens').set({
+          ...tokens,
+          updatedAt: Date.now()
+        });
+        saved = true;
+        console.log('☁️ [Firebase] Tokens synced to Realtime Database!');
+      } catch (e) {
+        // Realtime DB backup warning
+      }
+    }
+
+    return saved;
   }
 
-  // Load tokens from Firestore
+  // Load tokens from Firestore or Realtime DB
   async loadTokens() {
     if (!this.isReady()) return null;
-    try {
-      const docRef = this.db.collection('gopay_config').doc('tokens');
-      const snap = await docRef.get();
-      if (snap.exists) {
-        const data = snap.data();
-        console.log('☁️ [Firebase] Tokens successfully loaded from Cloud Firestore!');
-        return data;
+
+    // 1. Try Firestore first
+    if (this.firestore) {
+      try {
+        const docRef = this.firestore.collection('gopay_config').doc('tokens');
+        const snap = await docRef.get();
+        if (snap.exists) {
+          console.log('☁️ [Firebase] Tokens loaded from Cloud Firestore!');
+          return snap.data();
+        }
+      } catch (e) {
+        console.warn('⚠️ [Firebase] Firestore token load warning:', e.message);
       }
-      return null;
-    } catch (e) {
-      console.error('❌ [Firebase] Failed to load tokens from Firestore:', e.message);
-      return null;
     }
+
+    // 2. Try Realtime Database fallback
+    if (this.rtdb) {
+      try {
+        const snap = await this.rtdb.ref('gopay_config/tokens').once('value');
+        if (snap.exists()) {
+          console.log('☁️ [Firebase] Tokens loaded from Realtime Database!');
+          return snap.val();
+        }
+      } catch (e) {
+        console.warn('⚠️ [Firebase] Realtime Database token load warning:', e.message);
+      }
+    }
+
+    return null;
   }
 
-  // Save API keys to Firestore
+  // Save API keys to Firestore & Realtime DB
   async saveApiKeys(apiKeys) {
     if (!this.isReady()) return false;
-    try {
-      const docRef = this.db.collection('gopay_config').doc('apikeys');
-      await docRef.set({
-        keys: apiKeys,
-        updatedAt: admin.firestore.FieldValue.serverTimestamp()
-      }, { merge: true });
-      console.log('☁️ [Firebase] API Keys successfully synced to Cloud Firestore!');
-      return true;
-    } catch (e) {
-      console.error('❌ [Firebase] Failed to save API keys to Firestore:', e.message);
-      return false;
+    let saved = false;
+
+    if (this.firestore) {
+      try {
+        const docRef = this.firestore.collection('gopay_config').doc('apikeys');
+        await docRef.set({
+          keys: apiKeys,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+        saved = true;
+        console.log('☁️ [Firebase] API Keys synced to Cloud Firestore!');
+      } catch (e) {
+        console.warn('⚠️ [Firebase] Firestore API keys save warning:', e.message);
+      }
     }
+
+    if (this.rtdb) {
+      try {
+        await this.rtdb.ref('gopay_config/apikeys').set({
+          keys: apiKeys,
+          updatedAt: Date.now()
+        });
+        saved = true;
+        console.log('☁️ [Firebase] API Keys synced to Realtime Database!');
+      } catch (e) {
+        // Realtime DB backup warning
+      }
+    }
+
+    return saved;
   }
 
-  // Load API keys from Firestore
+  // Load API keys from Firestore or Realtime DB
   async loadApiKeys() {
     if (!this.isReady()) return null;
-    try {
-      const docRef = this.db.collection('gopay_config').doc('apikeys');
-      const snap = await docRef.get();
-      if (snap.exists) {
-        const data = snap.data();
-        if (Array.isArray(data.keys)) {
-          console.log(`☁️ [Firebase] ${data.keys.length} API Keys successfully loaded from Cloud Firestore!`);
-          return data.keys;
+
+    if (this.firestore) {
+      try {
+        const docRef = this.firestore.collection('gopay_config').doc('apikeys');
+        const snap = await docRef.get();
+        if (snap.exists) {
+          const data = snap.data();
+          if (Array.isArray(data.keys)) {
+            console.log(`☁️ [Firebase] ${data.keys.length} API Keys loaded from Cloud Firestore!`);
+            return data.keys;
+          }
         }
+      } catch (e) {
+        console.warn('⚠️ [Firebase] Firestore API keys load warning:', e.message);
       }
-      return null;
-    } catch (e) {
-      console.error('❌ [Firebase] Failed to load API keys from Firestore:', e.message);
-      return null;
     }
+
+    if (this.rtdb) {
+      try {
+        const snap = await this.rtdb.ref('gopay_config/apikeys').once('value');
+        if (snap.exists()) {
+          const data = snap.val();
+          if (Array.isArray(data.keys)) {
+            console.log(`☁️ [Firebase] ${data.keys.length} API Keys loaded from Realtime Database!`);
+            return data.keys;
+          }
+        }
+      } catch (e) {
+        console.warn('⚠️ [Firebase] Realtime Database API keys load warning:', e.message);
+      }
+    }
+
+    return null;
   }
 }
 

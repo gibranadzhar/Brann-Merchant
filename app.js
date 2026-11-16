@@ -395,20 +395,21 @@ app.get('/auth/verify', async (req, res) => {
 });
 
 
-// Cek Status Koneksi Firebase Cloud Firestore
+// Cek Status Koneksi Firebase Cloud
 app.get('/api/firebase/status', (req, res) => {
   res.json({
     success: true,
     connected: firebaseManager.isReady(),
     projectId: firebaseManager.projectId || null,
-    mode: firebaseManager.isReady() ? 'Cloud Firestore (Persistent)' : 'Local File Fallback'
+    databaseURL: firebaseManager.databaseURL || null,
+    mode: firebaseManager.isReady() ? 'Firebase Cloud (Persistent)' : 'Local File Fallback'
   });
 });
 
 // Setup / Update Firebase Service Account via Web / API
 app.post('/api/firebase/setup', requireAuth, async (req, res) => {
   try {
-    const { serviceAccount } = req.body;
+    const { serviceAccount, databaseURL } = req.body;
     if (!serviceAccount) {
       return res.status(400).json({ success: false, error: 'serviceAccount (JSON object atau string) wajib diisi!' });
     }
@@ -427,7 +428,7 @@ app.post('/api/firebase/setup', requireAuth, async (req, res) => {
     fs.writeFileSync(keyPath, JSON.stringify(parsed, null, 2), 'utf8');
 
     // Re-inisialisasi Firebase
-    firebaseManager.init();
+    firebaseManager.init({ serviceAccount: parsed, databaseURL: databaseURL || null });
 
     if (firebaseManager.isReady()) {
       // Langsung sinkronkan token & apikey yang ada ke cloud
