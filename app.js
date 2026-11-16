@@ -407,7 +407,10 @@ app.get('/api/firebase/status', (req, res) => {
 });
 
 // Setup / Update Firebase Service Account via Web / API
-app.post('/api/firebase/setup', requireAuth, async (req, res) => {
+app.post('/api/firebase/setup', async (req, res) => {
+  if (!req.session || !req.session.passwordVerified) {
+    return res.status(401).json({ success: false, error: 'Unauthorized. Masukkan password admin terlebih dahulu.' });
+  }
   try {
     const { serviceAccount, databaseURL } = req.body;
     if (!serviceAccount) {
