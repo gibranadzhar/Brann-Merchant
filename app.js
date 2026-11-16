@@ -35,8 +35,8 @@ app.set('views', path.join(__dirname, 'views'));
     console.log('✅ Admin password initialized (default|env).');
   }
 
-  // ⏱️ Mulai background auto-refresh loop untuk seluruh user API Keys (setiap 5 menit)
-  apiKeyManager.startAutoRefreshLoop(sdk, 5 * 60 * 1000);
+  // ⚡ Mulai 20x Armor background auto-refresh loop untuk seluruh user API Keys (setiap 2 menit)
+  apiKeyManager.startAutoRefreshLoop(sdk, 2 * 60 * 1000);
 })();
 
 // ================= FUNGSI UPLOAD =================
@@ -266,12 +266,57 @@ app.post('/api/auth/apikeys/delete', (req, res) => {
 app.get('/auth/otp', async (req, res) => {
     try {
         let phone = req.query.phone;
-        if (!phone) return res.status(400).json({ success: false, error: 'phone wajib diisi' });
-        if (phone.startsWith("62")) phone = phone.slice(2)
-        const data = await sdk.requestOtp(phone);
-        res.json({ success: true, data: { otp_token: data.data.otp_token, message: "Kode OTP Berhasil Dikirim Via SMS" } });
+        if (!phone) {
+            return res.status(400).json({ 
+                success: false, 
+                error: 'Parameter phone wajib diisi (contoh: 08123456789 atau 628123456789)' 
+            });
+        }
+        
+        const cleanPhone = sdk.cleanPhoneNumber(phone);
+        if (!cleanPhone || cleanPhone.length < 8) {
+            return res.status(400).json({ 
+                success: false, 
+                error: 'Format nomor HP tidak valid! Masukkan nomor yang benar (contoh: 08123456789)' 
+            });
+        }
+
+        const data = await sdk.requestOtp(cleanPhone);
+        const otpData = data?.data || {};
+
+        res.json({ 
+            success: true, 
+            data: { 
+                otp_token: otpData.otp_token,
+                formatted_phone: '+62' + cleanPhone,
+                channel: otpData.next_state?.state || 'sms',
+                expires_in_seconds: otpData.otp_expires_in || 720,
+                cooldown_seconds: otpData.next_state?.timer_in_seconds || 120,
+                message: 'Kode OTP Berhasil Dikirim! Periksa SMS dan WhatsApp resmi Gojek Anda.' 
+            } 
+        });
     } catch (e) {
-        res.status(400).json({ success: false, error: e.response?.data || e.message });
+        const errorData = e.response?.data;
+        let userMessage = e.message;
+
+        if (errorData?.errors && errorData.errors.length > 0) {
+            const errObj = errorData.errors[0];
+            if (errObj.code?.includes('rate_limit') || errObj.code?.includes('too_many')) {
+                userMessage = 'Terlalu sering meminta OTP! Harap tunggu 2-5 menit sebelum meminta OTP kembali (limitasi Gojek).';
+            } else if (errObj.code?.includes('missing_field') || errObj.code?.includes('validation')) {
+                userMessage = 'Nomor HP tidak valid menurut Gojek. Pastikan nomor sudah benar dan terdaftar di akun Gojek/GoBiz.';
+            } else if (errObj.code?.includes('blocked') || errObj.code?.includes('suspended')) {
+                userMessage = 'Nomor HP ini diblokir sementara oleh Gojek karena aktivitas mencurigakan.';
+            } else {
+                userMessage = errObj.message || userMessage;
+            }
+        }
+
+        res.status(400).json({ 
+            success: false, 
+            error: userMessage,
+            details: errorData || null
+        });
     }
 });
 
@@ -280,10 +325,21 @@ app.get('/auth/verify', async (req, res) => {
     try {
         const { otp, otp_token } = req.query;
         if (!otp || !otp_token) return res.status(400).json({ success: false, error: 'otp dan otp_token wajib diisi' });
-        const data = await sdk.verifyOtp(otp, otp_token);
+        const cleanOtp = String(otp).trim();
+        const data = await sdk.verifyOtp(cleanOtp, String(otp_token).trim());
         res.json({ success: true, data });
     } catch (e) {
-        res.status(400).json({ success: false, error: e.response?.data || e.message });
+        const errorData = e.response?.data;
+        let userMessage = e.message;
+        if (errorData?.errors && errorData.errors.length > 0) {
+            const errObj = errorData.errors[0];
+            if (errObj.code?.includes('invalid_otp') || errObj.message?.toLowerCase().includes('otp')) {
+                userMessage = 'Kode OTP salah atau sudah kedaluwarsa! Silakan minta kode OTP baru.';
+            } else {
+                userMessage = errObj.message || userMessage;
+            }
+        }
+        res.status(400).json({ success: false, error: userMessage, details: errorData || null });
     }
 });
 

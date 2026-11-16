@@ -647,8 +647,9 @@
                     <div class="w-full lg:w-1/2 space-y-4 flex flex-col">    
                         <div class="glass-input flex items-center px-5">    
                             <span class="param-label min-w-[60px] text-blue-700">phone=</span>    
-                            <input type="text" id="param-auth-otp-phone" placeholder="628xxxxxxxx" class="w-full bg-transparent outline-none py-5 text-lg">    
-                        </div>    
+                            <input type="text" id="param-auth-otp-phone" placeholder="08xxxxxxxx / 628xxxxxxxx" class="w-full bg-transparent outline-none py-5 text-lg">    
+                        </div>
+                        <p class="text-[11px] text-gray-500 font-medium">💡 Bisa pakai 08xxx atau 628xxx. Kode OTP dapat masuk ke <b>SMS</b> atau <b>WhatsApp resmi Gojek</b>.</p>    
                         <button onclick="runApiTest('/auth/otp', {phone: getVal('param-auth-otp-phone')}, 'res-otp')" class="btn-primary mt-auto py-5">    
                             <i data-lucide="play" class="w-5 h-5"></i> <span>Jalankan</span>    
                         </button>    

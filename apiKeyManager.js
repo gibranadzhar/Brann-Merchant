@@ -6,6 +6,7 @@ class ApiKeyManager {
   constructor() {
     this.candidatePaths = this.resolvePaths();
     this.keys = [];
+    this.refreshLocks = {};
     this.init();
   }
 
@@ -24,9 +25,10 @@ class ApiKeyManager {
         : path.join(process.env.DATA_PATH, 'apikeys.json'));
     }
 
-    // 2. Railway volume default paths (/data)
+    // 2. Volume & Container paths
     paths.push('/data/apikeys.json');
     paths.push('/app/data/apikeys.json');
+    paths.push('/tmp/apikeys.json');
 
     // 3. Local directory candidate paths
     paths.push(path.join(__dirname, 'data', 'apikeys.json'));
@@ -260,6 +262,15 @@ class ApiKeyManager {
   updateTokens(key, newAccessToken, newRefreshToken = null) {
     const entry = this.getKey(key);
     if (entry && entry.tokens) {
+      if (!Array.isArray(entry.tokens.historyRefreshTokens)) {
+        entry.tokens.historyRefreshTokens = [];
+      }
+      if (entry.tokens.refreshToken && !entry.tokens.historyRefreshTokens.includes(entry.tokens.refreshToken)) {
+        entry.tokens.historyRefreshTokens.unshift(entry.tokens.refreshToken);
+        if (entry.tokens.historyRefreshTokens.length > 5) {
+          entry.tokens.historyRefreshTokens.pop();
+        }
+      }
       if (newRefreshToken && newRefreshToken !== entry.tokens.refreshToken) {
         entry.tokens.previousRefreshToken = entry.tokens.refreshToken;
         entry.tokens.refreshToken = newRefreshToken;
@@ -267,7 +278,7 @@ class ApiKeyManager {
       entry.tokens.accessToken = newAccessToken;
       entry.tokens.lastRefresh = new Date().toISOString();
       this.save(true);
-      console.log(`🛡️ [ApiKeyManager] Tokens rotated & backed up for key ${key}`);
+      console.log(`🛡️ [ApiKeyManager] 20x Armor: Tokens rotated & 5-token ring buffer updated for key ${key}`);
     }
   }
 
@@ -276,14 +287,14 @@ class ApiKeyManager {
     return entry ? entry.tokens : null;
   }
 
-  startAutoRefreshLoop(sdk, intervalMs = 5 * 60 * 1000) {
+  startAutoRefreshLoop(sdk, intervalMs = 2 * 60 * 1000) {
     if (this.refreshInterval) clearInterval(this.refreshInterval);
 
-    // Initial check after 10 seconds
-    setTimeout(() => this.refreshAllTokens(sdk), 10000);
+    // Initial check after 5 seconds
+    setTimeout(() => this.refreshAllTokens(sdk), 5000);
 
     this.refreshInterval = setInterval(() => this.refreshAllTokens(sdk), intervalMs);
-    console.log(`🛡️ [ApiKeyManager] Bulletproof token refresh loop active (every ${intervalMs / 60000} mins)`);
+    console.log(`⚡ [ApiKeyManager] 20x Armor Heartbeat Loop ACTIVE (every ${intervalMs / 60000} mins)`);
   }
 
   async ensureValidToken(sdk, key) {
@@ -294,54 +305,81 @@ class ApiKeyManager {
     const now = Date.now();
     const ageMinutes = (now - lastRefreshTime) / (60 * 1000);
 
-    // Proactive refresh if token is older than 5 minutes
-    if (ageMinutes >= 5) {
-      console.log(`🛡️ [ProactiveRefresh] Token for ${key} is ${Math.round(ageMinutes)} mins old. Refreshing proactively...`);
-      await this.refreshSingleTokenWithRetry(sdk, entry, 3);
+    // Proactive refresh if token is older than 2 minutes
+    if (ageMinutes >= 2) {
+      console.log(`⚡ [ProactiveRefresh] Token for ${key} is ${ageMinutes.toFixed(1)} mins old. Proactively refreshing...`);
+      await this.refreshSingleTokenWithRetry(sdk, entry, 4);
     }
     return entry.tokens.accessToken;
   }
 
-  async refreshSingleTokenWithRetry(sdk, keyEntry, maxRetries = 5) {
+  async refreshSingleTokenWithRetry(sdk, keyEntry, maxRetries = 7) {
     if (!keyEntry || !keyEntry.tokens) return false;
-    
-    // Candidates: primary refreshToken first, then previousRefreshToken fallback
-    const refreshCandidates = [
-      keyEntry.tokens.refreshToken,
-      keyEntry.tokens.previousRefreshToken
-    ].filter(Boolean);
+    const key = keyEntry.key;
 
-    for (const tokenCandidate of refreshCandidates) {
-      for (let attempt = 1; attempt <= maxRetries; attempt++) {
-        try {
-          console.log(`🔄 [AutoRefresh] Attempt ${attempt}/${maxRetries} refreshing key ${keyEntry.key} (${keyEntry.label})...`);
-          const res = await sdk.refreshToken(tokenCandidate);
-          const resData = res?.data || res;
-          const newAccess = resData?.access_token;
-          const newRefresh = resData?.refresh_token;
+    // Mutex Lock Guard: If a refresh is already in progress for this key, wait for it
+    if (this.refreshLocks[key]) {
+      console.log(`🔒 [MutexGuard] Refresh already in progress for key ${key}, waiting...`);
+      try {
+        await this.refreshLocks[key];
+        return true;
+      } catch (e) {}
+    }
 
-          if (newAccess) {
-            this.updateTokens(keyEntry.key, newAccess, newRefresh);
-            console.log(`✅ [AutoRefresh] Success! Token rotated for key ${keyEntry.key}`);
-            return true;
-          }
-        } catch (e) {
-          const errMsg = e.response?.data?.message || e.message;
-          console.warn(`⚠️ [AutoRefresh] Attempt ${attempt}/${maxRetries} failed:`, errMsg);
-          if (attempt < maxRetries) {
-            await new Promise(r => setTimeout(r, 1500 * attempt));
+    let resolveLock, rejectLock;
+    this.refreshLocks[key] = new Promise((res, rej) => {
+      resolveLock = res;
+      rejectLock = rej;
+    });
+
+    try {
+      // Candidates Ring Buffer: current refreshToken, previousRefreshToken, plus all historical refresh tokens
+      const historyList = Array.isArray(keyEntry.tokens.historyRefreshTokens) ? keyEntry.tokens.historyRefreshTokens : [];
+      const refreshCandidates = [...new Set([
+        keyEntry.tokens.refreshToken,
+        keyEntry.tokens.previousRefreshToken,
+        ...historyList
+      ])].filter(Boolean);
+
+      for (const tokenCandidate of refreshCandidates) {
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+          try {
+            console.log(`🔄 [20xAutoRefresh] Attempt ${attempt}/${maxRetries} refreshing key ${keyEntry.key} (${keyEntry.label})...`);
+            const res = await sdk.refreshToken(tokenCandidate);
+            const resData = res?.data || res;
+            const newAccess = resData?.access_token;
+            const newRefresh = resData?.refresh_token;
+
+            if (newAccess) {
+              this.updateTokens(keyEntry.key, newAccess, newRefresh);
+              console.log(`✅ [20xAutoRefresh] Success! Token rotated & persisted for key ${keyEntry.key}`);
+              resolveLock(true);
+              delete this.refreshLocks[key];
+              return true;
+            }
+          } catch (e) {
+            const errMsg = e.response?.data?.message || e.message;
+            console.warn(`⚠️ [20xAutoRefresh] Attempt ${attempt}/${maxRetries} candidate error:`, errMsg);
+            if (attempt < maxRetries) {
+              await new Promise(r => setTimeout(r, 1000 * attempt));
+            }
           }
         }
       }
+      rejectLock(new Error('All token candidates exhausted'));
+      delete this.refreshLocks[key];
+      return false;
+    } catch (err) {
+      delete this.refreshLocks[key];
+      return false;
     }
-    return false;
   }
 
   async refreshAllTokens(sdk) {
     if (!Array.isArray(this.keys) || this.keys.length === 0 || !sdk) return;
 
     for (const k of this.keys) {
-      if (k && k.tokens && k.tokens.refreshToken) {
+      if (k && k.tokens && (k.tokens.refreshToken || k.tokens.previousRefreshToken)) {
         await this.refreshSingleTokenWithRetry(sdk, k);
       }
     }

@@ -10,7 +10,7 @@ class GoMerchant {
         this.uniqueId = uuidv4();
     }
 
-    headers(token = null) {
+    headers(token = null, customUniqueId = null) {
         const h = {
             'Accept': 'application/json, text/plain, */*',
             'Authentication-Type': 'go-id',
@@ -20,15 +20,27 @@ class GoMerchant {
             'X-Platform': 'Web',
             'X-User-Type': 'merchant',
             'x-appId': this.appId,
-            'x-uniqueid': this.uniqueId,
+            'x-uniqueid': customUniqueId || uuidv4(),
             'X-AppVersion': 'platform-v3.101.0-8918927d',
             'Gojek-Country-Code': 'ID',
             'Gojek-Timezone': 'Asia/Jakarta',
             'Content-Type': 'application/json',
-            'User-Agent': 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Mobile Safari/537.36'
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36'
         };
         if (token) h['Authorization'] = `Bearer ${token}`;
         return h;
+    }
+
+    cleanPhoneNumber(phone) {
+        if (!phone) return '';
+        let cleaned = String(phone).trim().replace(/\D/g, '');
+        if (cleaned.startsWith('62')) {
+            cleaned = cleaned.slice(2);
+        }
+        while (cleaned.startsWith('0')) {
+            cleaned = cleaned.slice(1);
+        }
+        return cleaned;
     }
 
     convertCRC16(str) {
@@ -72,9 +84,13 @@ class GoMerchant {
     }
 
     async requestOtp(phoneNumber) {
+        const cleanPhone = this.cleanPhoneNumber(phoneNumber);
+        if (!cleanPhone || cleanPhone.length < 8) {
+            throw new Error('Format nomor HP tidak valid. Contoh: 08123456789 atau 628123456789');
+        }
         const payload = {
             client_id: this.clientId,
-            phone_number: phoneNumber,
+            phone_number: cleanPhone,
             country_code: '62'
         };
         const response = await axios.post(`${this.baseUrl}/goid/login/request`, payload, {
