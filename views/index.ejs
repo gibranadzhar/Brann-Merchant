@@ -1213,7 +1213,12 @@ console.log(data.data); // Array data mutasi QRIS valid</pre>
                 });
                 const data = await res.json();
                 if (data.success) {
-                    showToast('✅ Token GoPay berhasil disimpan!', '✅');
+                    localStorage.setItem('merchantGoPayTokens', JSON.stringify({
+                        accessToken,
+                        refreshToken,
+                        savedAt: Date.now()
+                    }));
+                    showToast('✅ Token GoPay berhasil disimpan & sesi aktif permanen!', '✅');
                     document.getElementById('userAccessTokenInput').value = '';
                     document.getElementById('userRefreshTokenInput').value = '';
                     fetchUserKeyInfo(apikey);
@@ -1497,9 +1502,31 @@ console.log(data.data); // Array data mutasi QRIS valid</pre>
             resEl.innerText = "// Loading...";    
             resEl.style.color = '#fbbf24';    
             try {    
+                // Jika sedang verifikasi OTP, otomatis sertakan apikey aktif
+                if (endpoint === '/auth/verify') {
+                    const activeKey = localStorage.getItem('merchantApiKey');
+                    if (activeKey && !params.apikey) params.apikey = activeKey;
+                }
+
                 const res = await fetchGET(endpoint, params);    
                 resEl.style.color = res.error_type === "Network / CORS Error" ? '#f87171' : '#b4f0c8';    
                 resEl.innerText = JSON.stringify(res, null, 2);    
+
+                // Otomatis simpan token ke browser cache bila verifikasi OTP berhasil!
+                if (endpoint === '/auth/verify' && res.success && res.data) {
+                    const acc = res.data.access_token || res.data.data?.access_token;
+                    const ref = res.data.refresh_token || res.data.data?.refresh_token;
+                    if (acc && ref) {
+                        localStorage.setItem('merchantGoPayTokens', JSON.stringify({
+                            accessToken: acc,
+                            refreshToken: ref,
+                            savedAt: Date.now()
+                        }));
+                        showToast('🎉 Sesi GoPay otomatis tersimpan & aktif permanen!', '✅');
+                        const activeKey = localStorage.getItem('merchantApiKey');
+                        if (activeKey) fetchUserKeyInfo(activeKey);
+                    }
+                }
             } catch (e) {    
                 resEl.style.color = '#f87171';    
                 resEl.innerText = "// Error:\n" + e.message;    
@@ -1514,6 +1541,41 @@ console.log(data.data); // Array data mutasi QRIS valid</pre>
             showToast(`Tema diubah: ${themeName.toUpperCase()}`, '🎨');
         }
 
+        // Auto-Restore Session if Server was rebooted / memory wiped
+        async function autoRestoreSessionIfWiped() {
+            try {
+                const cachedTokensStr = localStorage.getItem('merchantGoPayTokens');
+                if (!cachedTokensStr) return;
+                const cached = JSON.parse(cachedTokensStr);
+                if (!cached.accessToken || !cached.refreshToken) return;
+
+                const statusRes = await fetch('/api/auth/token-status');
+                const statusData = await statusRes.json();
+
+                // Jika server kehilangan token (misal sehabis restart container), pulihkan otomatis dari cache browser!
+                if (!statusData.hasTokens) {
+                    console.log('🔄 Server baru aktif. Memulihkan token GoPay dari browser cache...');
+                    const res = await fetch('/api/auth/restore-tokens', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            accessToken: cached.accessToken,
+                            refreshToken: cached.refreshToken,
+                            apikey: localStorage.getItem('merchantApiKey')
+                        })
+                    });
+                    const rData = await res.json();
+                    if (rData.success) {
+                        showToast('⚡ Sesi GoPay otomatis aktif kembali tanpa perlu OTP!', '🚀');
+                        const activeKey = localStorage.getItem('merchantApiKey');
+                        if (activeKey) fetchUserKeyInfo(activeKey);
+                    }
+                }
+            } catch (e) {
+                console.warn('Auto-restore session check error:', e);
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', () => {    
             lucide.createIcons();
             const savedTheme = localStorage.getItem('merchantTheme') || 'neobrutalism';
@@ -1522,6 +1584,7 @@ console.log(data.data); // Array data mutasi QRIS valid</pre>
             if (savedKey) {
                 updateActiveKeyUI(savedKey);
             }
+            autoRestoreSessionIfWiped();
         });    
         const observer = new MutationObserver(() => { lucide.createIcons(); });    
         observer.observe(document.getElementById('toast'), { childList: true, subtree: true });    

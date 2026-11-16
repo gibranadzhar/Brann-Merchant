@@ -35,7 +35,21 @@ app.set('views', path.join(__dirname, 'views'));
     console.log('✅ Admin password initialized (default|env).');
   }
 
-  // ⚡ Mulai 20x Armor background auto-refresh loop untuk seluruh user API Keys (setiap 2 menit)
+  // 1. Cek & aktifkan token Owner bila tersimpan di disk
+  if (tokenManager.hasTokens()) {
+    tokenManager.setupAutoRefresh(sdk, 8 * 60 * 1000);
+    console.log('🛡️ [TokenManager] Sesi token Owner otomatis dipulihkan dari penyimpanan disk!');
+  } else {
+    // 2. Fallback: jika apiKeyManager memiliki token, sinkronkan ke tokenManager
+    const keyWithTokens = apiKeyManager.getAll().find(k => k.tokens?.accessToken && k.tokens?.refreshToken);
+    if (keyWithTokens) {
+      tokenManager.setTokens(keyWithTokens.tokens.accessToken, keyWithTokens.tokens.refreshToken);
+      tokenManager.setupAutoRefresh(sdk, 8 * 60 * 1000);
+      console.log(`🛡️ [TokenManager] Sesi dipulihkan dari API Key '${keyWithTokens.key}'!`);
+    }
+  }
+
+  // 3. ⚡ Mulai 20x Armor background auto-refresh loop untuk seluruh user API Keys (setiap 2 menit)
   apiKeyManager.startAutoRefreshLoop(sdk, 2 * 60 * 1000);
 })();
 
@@ -320,14 +334,44 @@ app.get('/auth/otp', async (req, res) => {
     }
 });
 
-// Verifikasi OTP
+// Verifikasi OTP (Otomatis simpan token & hubungkan sesi secara permanen)
 app.get('/auth/verify', async (req, res) => {
     try {
         const { otp, otp_token } = req.query;
         if (!otp || !otp_token) return res.status(400).json({ success: false, error: 'otp dan otp_token wajib diisi' });
         const cleanOtp = String(otp).trim();
         const data = await sdk.verifyOtp(cleanOtp, String(otp_token).trim());
-        res.json({ success: true, data });
+
+        // AUTO-SAVE TOKENS!
+        const accessToken = data?.data?.access_token || data?.access_token;
+        const refreshToken = data?.data?.refresh_token || data?.refresh_token;
+
+        let savedTo = [];
+        if (accessToken && refreshToken) {
+            tokenManager.setTokens(accessToken, refreshToken);
+            tokenManager.setupAutoRefresh(sdk, 8 * 60 * 1000);
+            savedTo.push('Owner Global');
+
+            const reqApiKey = req.query.apikey || req.headers['x-api-key'];
+            if (reqApiKey && apiKeyManager.isValid(reqApiKey)) {
+                apiKeyManager.setTokens(reqApiKey, accessToken, refreshToken);
+                savedTo.push(`API Key (${reqApiKey})`);
+            } else {
+                const keys = apiKeyManager.getAll();
+                if (keys && keys.length > 0) {
+                    apiKeyManager.setTokens(keys[0].key, accessToken, refreshToken);
+                    savedTo.push(`API Key (${keys[0].key})`);
+                }
+            }
+        }
+
+        res.json({ 
+            success: true, 
+            data,
+            autoSaved: savedTo.length > 0,
+            savedTo,
+            message: '🎉 OTP Berhasil Diverifikasi! Token GoPay otomatis tersimpan & sesi aktif permanen tanpa perlu minta OTP lagi.'
+        });
     } catch (e) {
         const errorData = e.response?.data;
         let userMessage = e.message;
@@ -340,6 +384,53 @@ app.get('/auth/verify', async (req, res) => {
             }
         }
         res.status(400).json({ success: false, error: userMessage, details: errorData || null });
+    }
+});
+
+// Auto-Restore Tokens dari Browser Cache (Saat Server Baru Selesai Reboot/Redeploy)
+app.post('/api/auth/restore-tokens', async (req, res) => {
+    try {
+        const { accessToken, refreshToken, apikey } = req.body;
+        if (!accessToken || !refreshToken) {
+            return res.status(400).json({ success: false, error: 'Access token dan refresh token wajib diisi!' });
+        }
+
+        let activeAccess = accessToken;
+        let activeRefresh = refreshToken;
+        try {
+            await sdk.getMe(activeAccess);
+        } catch (tokenErr) {
+            console.log('🔄 [AutoRestore] Token perlu refresh, mencoba me-refresh...');
+            const refreshRes = await sdk.refreshToken(activeRefresh);
+            const rData = refreshRes.data || refreshRes;
+            if (rData?.access_token) {
+                activeAccess = rData.access_token;
+                if (rData.refresh_token) activeRefresh = rData.refresh_token;
+            } else {
+                throw new Error('Refresh token sudah kedaluwarsa! Silahkan verifikasi OTP baru.');
+            }
+        }
+
+        tokenManager.setTokens(activeAccess, activeRefresh);
+        tokenManager.setupAutoRefresh(sdk, 8 * 60 * 1000);
+
+        if (apikey && apiKeyManager.isValid(apikey)) {
+            apiKeyManager.setTokens(apikey, activeAccess, activeRefresh);
+        } else {
+            const keys = apiKeyManager.getAll();
+            if (keys && keys.length > 0) {
+                apiKeyManager.setTokens(keys[0].key, activeAccess, activeRefresh);
+            }
+        }
+
+        console.log('⚡ [AutoRestore] Sesi token berhasil dipulihkan secara otomatis dari browser cache!');
+        res.json({
+            success: true,
+            message: 'Sesi & token GoPay berhasil dipulihkan secara otomatis!',
+            access_token: activeAccess
+        });
+    } catch (e) {
+        res.status(400).json({ success: false, error: e.message });
     }
 });
 

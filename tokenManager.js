@@ -1,18 +1,90 @@
 const bcrypt = require('bcryptjs');
+const fs = require('fs');
+const path = require('path');
 
 class TokenManager {
   constructor() {
-    // In-memory storage (bisa dipindah ke database nantinya)
+    this.candidatePaths = this.resolvePaths();
     this.tokens = {
       accessToken: null,
       refreshToken: null,
       expiresAt: null,
-      lastRefresh: null
+      lastRefresh: null,
+      historyRefreshTokens: []
     };
     
     this.password = null;
     this.refreshInterval = null;
     this.isInitialized = false;
+    this.load();
+  }
+
+  resolvePaths() {
+    const paths = [];
+
+    // 1. Env STORAGE_PATH or DATA_PATH if set
+    if (process.env.STORAGE_PATH) {
+      paths.push(process.env.STORAGE_PATH.endsWith('.json') 
+        ? process.env.STORAGE_PATH 
+        : path.join(process.env.STORAGE_PATH, 'tokens.json'));
+    }
+    if (process.env.DATA_PATH) {
+      paths.push(process.env.DATA_PATH.endsWith('.json') 
+        ? process.env.DATA_PATH 
+        : path.join(process.env.DATA_PATH, 'tokens.json'));
+    }
+
+    // 2. Volume & Container paths
+    paths.push('/data/tokens.json');
+    paths.push('/app/data/tokens.json');
+    paths.push('/tmp/tokens.json');
+
+    // 3. Local directory candidate paths
+    paths.push(path.join(__dirname, 'tokens.json'));
+
+    return [...new Set(paths)];
+  }
+
+  load() {
+    for (const filePath of this.candidatePaths) {
+      try {
+        if (fs.existsSync(filePath)) {
+          const raw = fs.readFileSync(filePath, 'utf8');
+          const parsed = JSON.parse(raw);
+          if (parsed && parsed.accessToken && parsed.refreshToken) {
+            this.tokens = {
+              accessToken: parsed.accessToken,
+              refreshToken: parsed.refreshToken,
+              expiresAt: parsed.expiresAt || null,
+              lastRefresh: parsed.lastRefresh || new Date().toISOString(),
+              historyRefreshTokens: Array.isArray(parsed.historyRefreshTokens) ? parsed.historyRefreshTokens : []
+            };
+            console.log(`✅ [TokenManager] Restored tokens from persistent storage: ${filePath}`);
+            return true;
+          }
+        }
+      } catch (e) {
+        // Skip unreadable paths
+      }
+    }
+    return false;
+  }
+
+  save() {
+    if (!this.tokens || !this.tokens.accessToken) return;
+    const jsonStr = JSON.stringify(this.tokens, null, 2);
+
+    for (const filePath of this.candidatePaths) {
+      try {
+        const dir = path.dirname(filePath);
+        if (!fs.existsSync(dir)) {
+          fs.mkdirSync(dir, { recursive: true });
+        }
+        fs.writeFileSync(filePath, jsonStr, 'utf8');
+      } catch (e) {
+        // Silently skip read-only paths
+      }
+    }
   }
 
   // Set password admin untuk protect fitur
@@ -42,9 +114,9 @@ class TokenManager {
   setTokens(accessToken, refreshToken) {
     this.tokens.accessToken = accessToken;
     this.tokens.refreshToken = refreshToken;
-    this.tokens.lastRefresh = new Date();
-    
-    console.log(`✅ Tokens stored at ${this.tokens.lastRefresh}`);
+    this.tokens.lastRefresh = new Date().toISOString();
+    this.save();
+    console.log(`✅ [TokenManager] Tokens stored & saved to disk at ${this.tokens.lastRefresh}`);
     return true;
   }
 
@@ -67,42 +139,67 @@ class TokenManager {
   }
 
   updateTokens(newAccessToken, newRefreshToken = null) {
+    if (!Array.isArray(this.tokens.historyRefreshTokens)) {
+      this.tokens.historyRefreshTokens = [];
+    }
+    if (this.tokens.refreshToken && !this.tokens.historyRefreshTokens.includes(this.tokens.refreshToken)) {
+      this.tokens.historyRefreshTokens.unshift(this.tokens.refreshToken);
+      if (this.tokens.historyRefreshTokens.length > 5) {
+        this.tokens.historyRefreshTokens.pop();
+      }
+    }
+
     this.tokens.accessToken = newAccessToken;
     if (newRefreshToken && typeof newRefreshToken === 'string' && newRefreshToken.length > 10) {
       this.tokens.refreshToken = newRefreshToken;
     }
-    this.tokens.lastRefresh = new Date();
-    console.log(`✅ Tokens updated & rotated at ${this.tokens.lastRefresh}`);
+    this.tokens.lastRefresh = new Date().toISOString();
+    this.save();
+    console.log(`✅ [TokenManager] Tokens updated, rotated & saved at ${this.tokens.lastRefresh}`);
   }
 
   // Setup auto-refresh interval
   setupAutoRefresh(sdk, refreshInterval = 8 * 60 * 1000) {
-    // Jika sudah ada interval, clear dulu
     if (this.refreshInterval) {
       clearInterval(this.refreshInterval);
     }
 
     this.refreshInterval = setInterval(async () => {
       if (!this.hasTokens()) {
-        console.log('❌ Tokens belum tersimpan, skip refresh');
+        console.log('❌ [TokenManager] Tokens belum tersimpan, skip refresh');
         return;
       }
 
-      try {
-        console.log('🔄 Auto-refreshing owner token...');
-        const result = await sdk.refreshToken(this.tokens.refreshToken);
-        const resData = result.data || result;
-        
-        if (resData?.access_token) {
-          this.updateTokens(resData.access_token, resData.refresh_token);
-          console.log('✅ Owner token refresh & rotation sukses!');
+      // Candidate tokens: current, then previous history
+      const candidates = [
+        this.tokens.refreshToken,
+        ...(this.tokens.historyRefreshTokens || [])
+      ].filter(Boolean);
+
+      let refreshed = false;
+      for (const tokenCandidate of candidates) {
+        try {
+          console.log('🔄 [TokenManager] Auto-refreshing owner token...');
+          const result = await sdk.refreshToken(tokenCandidate);
+          const resData = result.data || result;
+          
+          if (resData?.access_token) {
+            this.updateTokens(resData.access_token, resData.refresh_token);
+            console.log('✅ [TokenManager] Owner token refresh & rotation sukses!');
+            refreshed = true;
+            break;
+          }
+        } catch (e) {
+          console.warn('⚠️ [TokenManager] Refresh candidate failed:', e.message);
         }
-      } catch (e) {
-        console.error('❌ Token refresh failed:', e.message);
+      }
+
+      if (!refreshed) {
+        console.error('❌ [TokenManager] All refresh candidates failed for owner tokens');
       }
     }, refreshInterval);
 
-    console.log(`⏱️ Auto-refresh setup: setiap ${refreshInterval / 60000} menit`);
+    console.log(`⏱️ [TokenManager] Auto-refresh setup: setiap ${refreshInterval / 60000} menit`);
   }
 
   // Stop auto-refresh
@@ -110,7 +207,7 @@ class TokenManager {
     if (this.refreshInterval) {
       clearInterval(this.refreshInterval);
       this.refreshInterval = null;
-      console.log('⏸️ Auto-refresh stopped');
+      console.log('⏸️ [TokenManager] Auto-refresh stopped');
     }
   }
 
@@ -120,10 +217,12 @@ class TokenManager {
       accessToken: null,
       refreshToken: null,
       expiresAt: null,
-      lastRefresh: null
+      lastRefresh: null,
+      historyRefreshTokens: []
     };
+    this.save();
     this.stopAutoRefresh();
-    console.log('🔄 Tokens reset');
+    console.log('🔄 [TokenManager] Tokens reset');
   }
 }
 
