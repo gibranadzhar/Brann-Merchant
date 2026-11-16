@@ -563,6 +563,13 @@
                     </select>
                 </div>
 
+                
+                <!-- Firebase Cloud Badge -->
+                <div id="firebaseBadge" class="hidden sm:flex items-center gap-2 px-3 py-1.5" style="background: #FFF3C4; border: 2.5px solid var(--ink); border-radius: 4px; box-shadow: 3px 3px 0 0 var(--shadow-color); cursor: default;">
+                    <span id="firebaseDot" class="w-2.5 h-2.5 rounded-full" style="background: #F59E0B;"></span>
+                    <span id="firebaseText" class="text-[0.7rem] font-black uppercase tracking-wider" style="color: var(--ink);">Checking Cloud...</span>
+                </div>
+
                 <div class="hidden sm:flex items-center gap-2 px-4 py-2" style="background: var(--accent-emerald); border: 2.5px solid var(--ink); border-radius: 4px; box-shadow: 3px 3px 0 0 var(--shadow-color);">    
                     <span class="relative flex h-3 w-3">    
                         <span class="animate-ping absolute inline-flex h-full w-full rounded-full" style="background: var(--ink); opacity: 0.5;"></span>    
@@ -1542,6 +1549,30 @@ console.log(data.data); // Array data mutasi QRIS valid</pre>
         }
 
         // Auto-Restore Session if Server was rebooted / memory wiped
+        
+        async function checkFirebaseStatus() {
+            try {
+                const res = await fetch('/api/firebase/status');
+                const data = await res.json();
+                const badge = document.getElementById('firebaseBadge');
+                const dot = document.getElementById('firebaseDot');
+                const text = document.getElementById('firebaseText');
+                if (!badge || !dot || !text) return;
+
+                if (data.connected) {
+                    badge.style.background = '#A8F2C0';
+                    dot.style.background = '#10B981';
+                    text.innerText = '🔥 Cloud Firestore (' + (data.projectId || 'Connected') + ')';
+                } else {
+                    badge.style.background = '#FED7AA';
+                    dot.style.background = '#F97316';
+                    text.innerText = '☁️ Local Disk Storage';
+                }
+            } catch (e) {
+                console.warn('Firebase status check failed:', e);
+            }
+        }
+
         async function autoRestoreSessionIfWiped() {
             try {
                 const cachedTokensStr = localStorage.getItem('merchantGoPayTokens');
@@ -1585,6 +1616,7 @@ console.log(data.data); // Array data mutasi QRIS valid</pre>
                 updateActiveKeyUI(savedKey);
             }
             autoRestoreSessionIfWiped();
+            checkFirebaseStatus();
         });    
         const observer = new MutationObserver(() => { lucide.createIcons(); });    
         observer.observe(document.getElementById('toast'), { childList: true, subtree: true });    

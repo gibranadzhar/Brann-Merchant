@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const firebaseManager = require('./firebase');
 
 class ApiKeyManager {
   constructor() {
@@ -96,6 +97,23 @@ class ApiKeyManager {
     this.fetchFromGitHub();
   }
 
+
+  async syncFromFirebase() {
+    if (!firebaseManager || !firebaseManager.isReady()) return false;
+    try {
+      const cloudKeys = await firebaseManager.loadApiKeys();
+      if (Array.isArray(cloudKeys) && cloudKeys.length > 0) {
+        this.mergeKeys(cloudKeys);
+        this.save(false);
+        console.log(`☁️ [ApiKeyManager] ${cloudKeys.length} API Keys disinkronkan dari Cloud Firestore!`);
+        return true;
+      }
+    } catch (e) {
+      console.warn('⚠️ [ApiKeyManager] Gagal sinkronisasi API keys dari Firestore:', e.message);
+    }
+    return false;
+  }
+
   save(shouldSyncToGitHub = true) {
     if (!Array.isArray(this.keys)) return;
     const jsonStr = JSON.stringify(this.keys, null, 2);
@@ -110,6 +128,13 @@ class ApiKeyManager {
       } catch (e) {
         // Silently skip read-only paths
       }
+    }
+
+    
+    if (firebaseManager && firebaseManager.isReady()) {
+      firebaseManager.saveApiKeys(this.keys).catch(e => {
+        console.warn('⚠️ [ApiKeyManager] Firebase Firestore api keys save error:', e.message);
+      });
     }
 
     if (shouldSyncToGitHub) {

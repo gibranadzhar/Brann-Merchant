@@ -4,3 +4,8 @@ node_modules/
 !.env.example
 logs/
 *.log
+*serviceAccountKey*.json
+*firebase-adminsdk*.json
+tokens.json
+data/*
+!data/.gitkeep

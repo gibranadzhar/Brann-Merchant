@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 const fs = require('fs');
 const path = require('path');
+const firebaseManager = require('./firebase');
 
 class TokenManager {
   constructor() {
@@ -70,6 +71,28 @@ class TokenManager {
     return false;
   }
 
+  async syncFromCloud() {
+    if (!firebaseManager || !firebaseManager.isReady()) return false;
+    try {
+      const cloud = await firebaseManager.loadTokens();
+      if (cloud && cloud.accessToken && cloud.refreshToken) {
+        this.tokens = {
+          accessToken: cloud.accessToken,
+          refreshToken: cloud.refreshToken,
+          expiresAt: cloud.expiresAt || null,
+          lastRefresh: cloud.lastRefresh || new Date().toISOString(),
+          historyRefreshTokens: Array.isArray(cloud.historyRefreshTokens) ? cloud.historyRefreshTokens : []
+        };
+        this.save();
+        console.log('☁️ [TokenManager] Sesi token GoPay dipulihkan dari Cloud Firestore!');
+        return true;
+      }
+    } catch (e) {
+      console.warn('⚠️ [TokenManager] Gagal sinkronisasi token dari Firestore:', e.message);
+    }
+    return false;
+  }
+
   save() {
     if (!this.tokens || !this.tokens.accessToken) return;
     const jsonStr = JSON.stringify(this.tokens, null, 2);
@@ -84,6 +107,13 @@ class TokenManager {
       } catch (e) {
         // Silently skip read-only paths
       }
+    }
+
+    // Sync to Cloud Firestore if connected
+    if (firebaseManager && firebaseManager.isReady()) {
+      firebaseManager.saveTokens(this.tokens).catch(e => {
+        console.warn('⚠️ [TokenManager] Firebase Firestore token save error:', e.message);
+      });
     }
   }
 

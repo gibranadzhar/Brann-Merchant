@@ -6,6 +6,7 @@ const fetch = (...args) => import("node-fetch").then(({ default: fetch }) => fet
 const FormData = require("form-data");
 const session = require('express-session');
 const tokenManager = require('./tokenManager');
+const firebaseManager = require('./firebase');
 const apiKeyManager = require('./apiKeyManager');
 
 const app = express();
@@ -33,6 +34,12 @@ app.set('views', path.join(__dirname, 'views'));
     const PASSWORD = process.env.ADMIN_PASSWORD || 'Akunff+62';
     await tokenManager.setPassword(PASSWORD);
     console.log('✅ Admin password initialized (default|env).');
+  }
+
+  // 0. Sinkronisasi data dari Cloud Firestore jika terhubung
+  if (firebaseManager.isReady()) {
+    await tokenManager.syncFromCloud();
+    await apiKeyManager.syncFromFirebase();
   }
 
   // 1. Cek & aktifkan token Owner bila tersimpan di disk
@@ -385,6 +392,61 @@ app.get('/auth/verify', async (req, res) => {
         }
         res.status(400).json({ success: false, error: userMessage, details: errorData || null });
     }
+});
+
+
+// Cek Status Koneksi Firebase Cloud Firestore
+app.get('/api/firebase/status', (req, res) => {
+  res.json({
+    success: true,
+    connected: firebaseManager.isReady(),
+    projectId: firebaseManager.projectId || null,
+    mode: firebaseManager.isReady() ? 'Cloud Firestore (Persistent)' : 'Local File Fallback'
+  });
+});
+
+// Setup / Update Firebase Service Account via Web / API
+app.post('/api/firebase/setup', requireAuth, async (req, res) => {
+  try {
+    const { serviceAccount } = req.body;
+    if (!serviceAccount) {
+      return res.status(400).json({ success: false, error: 'serviceAccount (JSON object atau string) wajib diisi!' });
+    }
+
+    let parsed = serviceAccount;
+    if (typeof serviceAccount === 'string') {
+      parsed = JSON.parse(serviceAccount.trim());
+    }
+
+    if (!parsed.project_id || !parsed.private_key || !parsed.client_email) {
+      return res.status(400).json({ success: false, error: 'Format Service Account tidak valid. Harus memiliki project_id, client_email, dan private_key.' });
+    }
+
+    // Tulis ke serviceAccountKey.json
+    const keyPath = path.join(__dirname, 'serviceAccountKey.json');
+    fs.writeFileSync(keyPath, JSON.stringify(parsed, null, 2), 'utf8');
+
+    // Re-inisialisasi Firebase
+    firebaseManager.init();
+
+    if (firebaseManager.isReady()) {
+      // Langsung sinkronkan token & apikey yang ada ke cloud
+      if (tokenManager.hasTokens()) {
+        await firebaseManager.saveTokens(tokenManager.getTokens());
+      }
+      await firebaseManager.saveApiKeys(apiKeyManager.getAll());
+
+      return res.json({
+        success: true,
+        message: `🎉 Firebase Cloud Firestore berhasil terhubung ke project '${firebaseManager.projectId}'! Data sesi & API Key otomatis tersinkronisasi ke cloud.`,
+        projectId: firebaseManager.projectId
+      });
+    } else {
+      return res.status(500).json({ success: false, error: 'Gagal menginisialisasi Firebase dengan kredensial yang diberikan.' });
+    }
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
 });
 
 // Auto-Restore Tokens dari Browser Cache (Saat Server Baru Selesai Reboot/Redeploy)
