@@ -1,3 +1,4 @@
+const { getEmbeddedServiceAccount, getEmbeddedDatabaseUrl } = require('./firebase-credentials');
 const fs = require('fs');
 const path = require('path');
 const admin = require('firebase-admin');
@@ -29,7 +30,16 @@ class FirebaseManager {
     }
 
     let serviceAccount = null;
-    let databaseURL = process.env.FIREBASE_DATABASE_URL || 'https://database-alight-motion-default-rtdb.firebaseio.com/';
+    let databaseURL = process.env.FIREBASE_DATABASE_URL || getEmbeddedDatabaseUrl() || 'https://database-alight-motion-default-rtdb.firebaseio.com/';
+
+    // 0. Auto-load from embedded credentials file (Zero Config!)
+    try {
+      const embedded = getEmbeddedServiceAccount();
+      if (embedded && embedded.project_id) {
+        serviceAccount = embedded;
+        console.log('🔥 [Firebase GoPay] Terhubung otomatis via file kredensial lokal (Zero Config Railway)!');
+      }
+    } catch (e) {}
 
     if (customConfig && customConfig.serviceAccount) {
       serviceAccount = customConfig.serviceAccount;
