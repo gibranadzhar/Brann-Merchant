@@ -29,7 +29,7 @@ class FirebaseManager {
     }
 
     let serviceAccount = null;
-    let databaseURL = process.env.FIREBASE_DATABASE_URL || 'https://database-merchant-default-rtdb.firebaseio.com/';
+    let databaseURL = process.env.FIREBASE_DATABASE_URL || 'https://database-alight-motion-default-rtdb.firebaseio.com/';
 
     if (customConfig && customConfig.serviceAccount) {
       serviceAccount = customConfig.serviceAccount;
