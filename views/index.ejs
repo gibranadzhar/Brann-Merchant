@@ -1516,8 +1516,24 @@ console.log(data.data); // Array data mutasi QRIS valid</pre>
                 }
 
                 const res = await fetchGET(endpoint, params);    
-                resEl.style.color = res.error_type === "Network / CORS Error" ? '#f87171' : '#b4f0c8';    
+                resEl.style.color = res.error_type === "Network / CORS Error" || res.success === false ? '#f87171' : '#b4f0c8';    
                 resEl.innerText = JSON.stringify(res, null, 2);    
+
+                // Otomatis isi otp_token ke form verifikasi saat minta OTP berhasil!
+                if (endpoint === '/auth/otp' && res.success && res.data) {
+                    const otpTok = res.data.otp_token || res.data.data?.otp_token;
+                    if (otpTok) {
+                        const targetField = document.getElementById('param-auth-verify-otp_token');
+                        if (targetField) targetField.value = otpTok;
+                        showToast('📩 Kode OTP terkirim! Masukkan 4 digit OTP di bawah ini.', '✅');
+                        const verifyCard = document.querySelector('[data-endpoint="auth-verify"]');
+                        if (verifyCard) {
+                            verifyCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            const otpInput = document.getElementById('param-auth-verify-otp');
+                            if (otpInput) setTimeout(() => otpInput.focus(), 400);
+                        }
+                    }
+                }
 
                 // Otomatis simpan token ke browser cache bila verifikasi OTP berhasil!
                 if (endpoint === '/auth/verify' && res.success && res.data) {
@@ -1529,6 +1545,8 @@ console.log(data.data); // Array data mutasi QRIS valid</pre>
                             refreshToken: ref,
                             savedAt: Date.now()
                         }));
+                        const refreshInput = document.getElementById('param-auth-refresh-refresh_token');
+                        if (refreshInput) refreshInput.value = ref;
                         showToast('🎉 Sesi GoPay otomatis tersimpan & aktif permanen!', '✅');
                         const activeKey = localStorage.getItem('merchantApiKey');
                         if (activeKey) fetchUserKeyInfo(activeKey);

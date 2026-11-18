@@ -44,7 +44,7 @@ class GoMerchant {
             'X-Platform': 'Web',
             'X-User-Type': 'merchant',
             'x-appId': this.appId,
-            'x-uniqueid': customUniqueId || uuidv4(),
+            'x-uniqueid': customUniqueId || this.uniqueId,
             'X-AppVersion': this.appVersion || 'platform-v3.131.0-93e290ae',
             'Gojek-Country-Code': 'ID',
             'Gojek-Timezone': 'Asia/Jakarta',
@@ -149,7 +149,7 @@ class GoMerchant {
         return response.data;
     }
 
-    async refreshToken(refreshToken) {
+    async refreshToken(refreshToken, clientIp = null) {
         await this.fetchLatestAppVersion();
         const payload = {
             client_id: this.clientId,
@@ -159,7 +159,7 @@ class GoMerchant {
             }
         };
         const response = await axios.post(`${this.baseUrl}/goid/token`, payload, {
-            headers: this.headers()
+            headers: this.headers(null, this.uniqueId, clientIp)
         });
         return response.data;
     }

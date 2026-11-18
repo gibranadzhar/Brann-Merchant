@@ -507,10 +507,23 @@ app.get('/auth/refresh/token', async (req, res) => {
     try {
         const refreshToken = req.query.refresh_token;
         if (!refreshToken) return res.status(400).json({ success: false, error: 'refresh_token wajib diisi' });
-        const data = await sdk.refreshToken(refreshToken);
+        const clientIp = req.headers['cf-connecting-ip'] || req.headers['x-forwarded-for']?.split(',')[0].trim() || req.ip;
+        const data = await sdk.refreshToken(refreshToken, clientIp);
         res.json({ success: true, data });
     } catch (e) {
-        res.status(401).json({ success: false, error: e.response?.data || e.message });
+        const errData = e.response?.data;
+        let errMsg = e.message;
+        if (errData?.errors?.[0]?.code === 'goid:error:unauthorized' || errData?.errors?.[0]?.message?.includes('versi aplikasi')) {
+            errMsg = 'Refresh token sudah kedaluwarsa atau tidak valid! Silakan login ulang via OTP (/auth/otp) untuk mendapatkan token baru.';
+        } else if (errData?.errors?.[0]?.message) {
+            errMsg = errData.errors[0].message;
+        }
+        res.status(401).json({ 
+            success: false, 
+            error: errMsg,
+            hint: 'Sesi GoPay Anda telah berakhir. Silakan gunakan menu /auth/otp di atas untuk meminta OTP baru.',
+            details: errData || null 
+        });
     }
 });
 
