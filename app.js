@@ -302,7 +302,8 @@ app.get('/auth/otp', async (req, res) => {
             });
         }
 
-        const data = await sdk.requestOtp(cleanPhone);
+        const clientIp = req.headers['cf-connecting-ip'] || req.headers['x-forwarded-for']?.split(',')[0].trim() || req.ip;
+        const data = await sdk.requestOtp(cleanPhone, clientIp);
         const otpData = data?.data || {};
 
         res.json({ 
@@ -347,7 +348,8 @@ app.get('/auth/verify', async (req, res) => {
         const { otp, otp_token } = req.query;
         if (!otp || !otp_token) return res.status(400).json({ success: false, error: 'otp dan otp_token wajib diisi' });
         const cleanOtp = String(otp).trim();
-        const data = await sdk.verifyOtp(cleanOtp, String(otp_token).trim());
+        const clientIp = req.headers['cf-connecting-ip'] || req.headers['x-forwarded-for']?.split(',')[0].trim() || req.ip;
+        const data = await sdk.verifyOtp(cleanOtp, String(otp_token).trim(), clientIp);
 
         // AUTO-SAVE TOKENS!
         const accessToken = data?.data?.access_token || data?.access_token;

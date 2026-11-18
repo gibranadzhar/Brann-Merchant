@@ -34,7 +34,7 @@ class GoMerchant {
         return this.appVersion;
     }
 
-    headers(token = null, customUniqueId = null) {
+    headers(token = null, customUniqueId = null, clientIp = null) {
         const h = {
             'Accept': 'application/json, text/plain, */*',
             'Authentication-Type': 'go-id',
@@ -55,6 +55,11 @@ class GoMerchant {
             'Content-Type': 'application/json',
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36'
         };
+        if (clientIp) {
+            h['X-Forwarded-For'] = clientIp;
+            h['CF-Connecting-IP'] = clientIp;
+            h['True-Client-IP'] = clientIp;
+        }
         if (token) h['Authorization'] = `Bearer ${token}`;
         return h;
     }
@@ -111,7 +116,7 @@ class GoMerchant {
         }
     }
 
-    async requestOtp(phoneNumber) {
+    async requestOtp(phoneNumber, clientIp = null) {
         await this.fetchLatestAppVersion();
         const cleanPhone = this.cleanPhoneNumber(phoneNumber);
         if (!cleanPhone || cleanPhone.length < 8) {
@@ -123,12 +128,12 @@ class GoMerchant {
             country_code: '62'
         };
         const response = await axios.post(`${this.baseUrl}/goid/login/request`, payload, {
-            headers: this.headers()
+            headers: this.headers(null, null, clientIp)
         });
         return response.data;
     }
 
-    async verifyOtp(otp, otpToken) {
+    async verifyOtp(otp, otpToken, clientIp = null) {
         await this.fetchLatestAppVersion();
         const payload = {
             client_id: this.clientId,
@@ -139,7 +144,7 @@ class GoMerchant {
             grant_type: 'otp'
         };
         const response = await axios.post(`${this.baseUrl}/goid/token`, payload, {
-            headers: this.headers()
+            headers: this.headers(null, null, clientIp)
         });
         return response.data;
     }
