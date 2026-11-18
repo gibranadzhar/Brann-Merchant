@@ -187,11 +187,18 @@ app.post('/api/auth/login-apikey', (req, res) => {
         if (!apikey) {
             return res.status(400).json({ success: false, error: 'API Key wajib diisi!' });
         }
-        const isValid = apiKeyManager.isValid(apikey);
-        if (!isValid) {
+        const keyData = apiKeyManager.getKey(apikey);
+        if (!keyData) {
             return res.status(401).json({ success: false, error: 'API Key tidak valid atau telah dihapus!' });
         }
-        res.json({ success: true, message: 'API Key valid!', apikey });
+        res.json({ 
+            success: true, 
+            message: 'API Key valid!', 
+            apikey: keyData.key,
+            label: keyData.label,
+            hasTokens: !!(keyData.tokens && keyData.tokens.accessToken && keyData.tokens.refreshToken),
+            lastRefresh: keyData.tokens?.lastRefresh || null
+        });
     } catch (e) {
         res.status(400).json({ success: false, error: e.message });
     }
@@ -286,6 +293,14 @@ app.post('/api/auth/apikeys/delete', (req, res) => {
 // Kirim OTP
 app.get('/auth/otp', async (req, res) => {
     try {
+        const reqApiKey = req.query.apikey || req.headers['x-api-key'];
+        if (!reqApiKey || !apiKeyManager.isValid(reqApiKey)) {
+            return res.status(401).json({ 
+                success: false, 
+                error: 'API Key wajib diisi dan harus valid untuk meminta OTP! Silakan login dengan API Key Anda terlebih dahulu.' 
+            });
+        }
+
         let phone = req.query.phone;
         if (!phone) {
             return res.status(400).json({ 
@@ -314,6 +329,7 @@ app.get('/auth/otp', async (req, res) => {
                 channel: otpData.next_state?.state || 'sms',
                 expires_in_seconds: otpData.otp_expires_in || 720,
                 cooldown_seconds: otpData.next_state?.timer_in_seconds || 120,
+                apikey: reqApiKey,
                 message: 'Kode OTP Berhasil Dikirim! Periksa SMS dan WhatsApp resmi Gojek Anda.' 
             } 
         });
@@ -345,6 +361,14 @@ app.get('/auth/otp', async (req, res) => {
 // Verifikasi OTP (Otomatis simpan token & hubungkan sesi secara permanen)
 app.get('/auth/verify', async (req, res) => {
     try {
+        const reqApiKey = req.query.apikey || req.headers['x-api-key'] || req.body?.apikey;
+        if (!reqApiKey || !apiKeyManager.isValid(reqApiKey)) {
+            return res.status(401).json({ 
+                success: false, 
+                error: 'API Key wajib diisi dan harus valid untuk memverifikasi OTP! Silakan login dengan API Key Anda terlebih dahulu.' 
+            });
+        }
+
         const { otp, otp_token } = req.query;
         if (!otp || !otp_token) return res.status(400).json({ success: false, error: 'otp dan otp_token wajib diisi' });
         const cleanOtp = String(otp).trim();
@@ -357,20 +381,15 @@ app.get('/auth/verify', async (req, res) => {
 
         let savedTo = [];
         if (accessToken && refreshToken) {
-            tokenManager.setTokens(accessToken, refreshToken);
-            tokenManager.setupAutoRefresh(sdk, 8 * 60 * 1000);
-            savedTo.push('Owner Global');
+            // 1. Simpan LANGSUNG dan UTAMAKAN ke API Key user tersebut!
+            apiKeyManager.setTokens(reqApiKey, accessToken, refreshToken);
+            savedTo.push(`API Key (${reqApiKey})`);
 
-            const reqApiKey = req.query.apikey || req.headers['x-api-key'];
-            if (reqApiKey && apiKeyManager.isValid(reqApiKey)) {
-                apiKeyManager.setTokens(reqApiKey, accessToken, refreshToken);
-                savedTo.push(`API Key (${reqApiKey})`);
-            } else {
-                const keys = apiKeyManager.getAll();
-                if (keys && keys.length > 0) {
-                    apiKeyManager.setTokens(keys[0].key, accessToken, refreshToken);
-                    savedTo.push(`API Key (${keys[0].key})`);
-                }
+            // 2. Simpan juga ke tokenManager owner jika belum ada token
+            if (!tokenManager.hasTokens()) {
+                tokenManager.setTokens(accessToken, refreshToken);
+                tokenManager.setupAutoRefresh(sdk, 8 * 60 * 1000);
+                savedTo.push('Owner Global');
             }
         }
 
@@ -379,7 +398,8 @@ app.get('/auth/verify', async (req, res) => {
             data,
             autoSaved: savedTo.length > 0,
             savedTo,
-            message: '🎉 OTP Berhasil Diverifikasi! Token GoPay otomatis tersimpan & sesi aktif permanen tanpa perlu minta OTP lagi.'
+            apikey: reqApiKey,
+            message: `🎉 OTP Berhasil Diverifikasi! Akun GoPay telah terhubung otomatis ke API Key ${reqApiKey} dan aktif permanen.`
         });
     } catch (e) {
         const errorData = e.response?.data;

@@ -563,7 +563,6 @@
                     </select>
                 </div>
 
-                
                 <!-- Firebase Cloud Badge -->
                 <div id="firebaseBadge" class="hidden sm:flex items-center gap-2 px-3 py-1.5" style="background: #FFF3C4; border: 2.5px solid var(--ink); border-radius: 4px; box-shadow: 3px 3px 0 0 var(--shadow-color); cursor: default;">
                     <span id="firebaseDot" class="w-2.5 h-2.5 rounded-full" style="background: #F59E0B;"></span>
@@ -576,30 +575,148 @@
                         <span class="relative inline-flex rounded-full h-3 w-3" style="background: var(--ink);"></span>    
                     </span>    
                     <span class="text-[0.7rem] font-black uppercase tracking-widest" style="color: var(--ink);">Live Server</span>    
-                </div>    
+                </div>
+
+                <button class="btn-owner-portal py-1.5 px-3 text-xs" onclick="openPasswordModal()">
+                    <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
+                    <span class="hidden sm:inline">Owner</span>
+                </button>
             </div>    
         </div>    
     </nav>    
     
     <main class="max-w-6xl mx-auto p-4 sm:p-6 md:p-10 pb-32">    
-        <div class="space-y-6 sm:space-y-8">    
-        
-            <!-- Top Banner / Buttons -->
-            <div class="premium-card p-6 sm:p-8">
-                <div class="flex items-center justify-between gap-4 flex-wrap">
+        <!-- 1. GATEWAY SCREEN (Tampil jika BELUM login API Key) -->
+        <div id="apiKeyGateContainer" class="max-w-xl mx-auto py-10 px-2 sm:px-4">
+            <div class="premium-card p-6 sm:p-10 text-center relative overflow-hidden" style="border: 3.5px solid var(--ink); box-shadow: 6px 6px 0 0 var(--shadow-color);">
+                <div class="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6" style="background: var(--accent-yellow); border: 3px solid var(--ink); box-shadow: 4px 4px 0 0 var(--shadow-color);">
+                    <i data-lucide="key-round" class="w-8 h-8 text-black"></i>
+                </div>
+                <h1 class="text-2xl sm:text-3xl font-black tracking-tight mb-2" style="color: var(--ink);">GoMerch API Gateway</h1>
+                <p class="text-xs sm:text-sm font-semibold mb-6 max-w-md mx-auto text-slate-600 leading-relaxed">
+                    Silakan masukkan <span class="font-extrabold text-black">API Key</span> Anda untuk membuka seluruh fitur dashboard, meminta kode OTP GoPay, dan mengakses direct endpoint mutasi QRIS.
+                </p>
+
+                <form id="gateLoginForm" onsubmit="handleGateLogin(event)" class="space-y-4 max-w-md mx-auto text-left">
                     <div>
-                        <h2 class="text-2xl font-black mb-2">🔑 GoMerch API Key Gateway</h2>
-                        <p class="text-gray-600 text-sm">Gunakan API Key untuk mengakses auto history mutasi QRIS. Owner dapat mengelola API Key & token.</p>
+                        <label class="block text-xs font-black uppercase tracking-wider mb-2" style="color: var(--ink);">API Key Anda</label>
+                        <input type="text" id="gateApiKeyInput" placeholder="Contoh: Branndigitalhub" class="w-full px-4 py-3.5 font-mono font-bold text-sm sm:text-base rounded-xl outline-none" style="background: #ffffff; border: 3px solid var(--ink); box-shadow: 3px 3px 0 0 var(--shadow-color);" required autofocus>
                     </div>
-                    <div class="flex items-center gap-3 flex-wrap">
-                        <button class="btn-token-setup" onclick="openApiKeyModal()">
-                            <i data-lucide="key" class="w-5 h-5"></i>
-                            Login API Key
+
+                    <div id="gateErrorMsg" class="hidden p-3.5 rounded-xl border-2 border-red-500 bg-red-50 text-red-700 text-xs font-bold flex items-center gap-2">
+                        <i data-lucide="alert-circle" class="w-4 h-4 shrink-0"></i>
+                        <span id="gateErrorText">API Key tidak valid atau tidak terdaftar!</span>
+                    </div>
+
+                    <button type="submit" id="btnGateLogin" class="btn-primary w-full py-4 text-sm sm:text-base font-black flex items-center justify-center gap-2 mt-2">
+                        <i data-lucide="log-in" class="w-5 h-5"></i>
+                        <span>Masuk ke Dashboard</span>
+                    </button>
+                </form>
+
+                <div class="mt-8 pt-6 border-t-2 border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
+                    <span>Belum memiliki API Key? Hubungi Administrator.</span>
+                    <button type="button" onclick="openPasswordModal()" class="font-extrabold hover:underline text-slate-800 flex items-center gap-1.5 cursor-pointer">
+                        <i data-lucide="shield-check" class="w-4 h-4"></i> Owner Portal
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. DASHBOARD FEATURES CONTAINER (Tampil HANYA jika SUDAH login API Key) -->
+        <div id="dashboardFeaturesContainer" class="space-y-6 sm:space-y-8 hidden">
+            <!-- Active Session Bar -->
+            <div class="premium-card p-5 sm:p-6" style="background: #0f172a; color: #ffffff; border: 3px solid var(--ink); box-shadow: 5px 5px 0 0 var(--shadow-color);">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div class="flex items-center gap-3.5">
+                        <div class="w-12 h-12 rounded-xl flex items-center justify-center bg-amber-400 text-black border-2 border-black font-black text-xl shadow-md shrink-0">
+                            🔑
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <span class="text-xs font-black uppercase tracking-wider text-slate-400">Sesi API Key:</span>
+                                <span id="activeKeyNameBadge" class="px-2.5 py-0.5 rounded-md bg-amber-400/20 text-amber-300 border border-amber-400/40 font-mono font-extrabold text-sm">Branndigitalhub</span>
+                                <span id="activeKeyLabelBadge" class="text-xs font-bold text-slate-300">(Brann Digital Hub)</span>
+                            </div>
+                            <div class="mt-1 flex items-center gap-2 flex-wrap" id="userKeyTokenStatusText">
+                                <span class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-extrabold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                                    <span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span> Memeriksa status token GoPay...
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center gap-2.5 w-full sm:w-auto justify-end flex-wrap">
+                        <button onclick="openPasswordModal()" class="px-3.5 py-2 rounded-lg font-bold text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 flex items-center gap-1.5 transition-colors">
+                            <i data-lucide="shield" class="w-3.5 h-3.5"></i> Owner Portal
                         </button>
-                        <button class="btn-owner-portal" onclick="openPasswordModal()">
-                            <i data-lucide="shield-check" class="w-5 h-5"></i>
-                            Owner Portal
+                        <button onclick="logoutApiKey()" class="px-4 py-2 rounded-lg font-extrabold text-xs bg-red-600/90 hover:bg-red-600 text-white border-2 border-black shadow flex items-center gap-1.5 transition-all">
+                            <i data-lucide="log-out" class="w-4 h-4"></i> Keluar / Ganti Key
                         </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notice if tokens not yet connected -->
+            <div id="unlinkedTokenNotice" class="hidden p-5 rounded-2xl border-3 border-amber-500 bg-amber-50 text-amber-950 shadow-md flex items-start gap-3.5">
+                <div class="w-8 h-8 rounded-lg bg-amber-400 text-black flex items-center justify-center shrink-0 font-black mt-0.5">💡</div>
+                <div class="text-xs sm:text-sm">
+                    <h4 class="font-black text-amber-950 mb-1">Akun GoPay Belum Terhubung ke API Key Anda</h4>
+                    <p class="font-medium text-amber-900 leading-relaxed">
+                        Silakan kirim kode OTP melalui form <b>/auth/otp</b> di bawah. Begitu 4 digit OTP Anda verifikasi di form <b>/auth/verify</b>, akun GoPay akan <b>otomatis terpasang ke API Key Anda</b> dan langsung aktif permanen!
+                    </p>
+                </div>
+            </div>
+
+            <!-- API Integration Guide & Ready-to-Use URL Box -->
+            <div class="rounded-xl border-3 border-slate-900 overflow-hidden bg-slate-900 text-slate-100 shadow-xl space-y-0">
+                <div class="p-4 bg-slate-800 border-b border-slate-700 flex items-center justify-between flex-wrap gap-2">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="code-2" class="w-5 h-5 text-cyan-400"></i>
+                        <h3 class="font-black text-sm text-white">Panduan Integrasi Auto History Mutasi QRIS</h3>
+                    </div>
+                    <span class="text-[10px] font-mono font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 px-2.5 py-1 rounded-md">GET /api/history/auto/:apikey</span>
+                </div>
+
+                <div class="p-5 sm:p-6 space-y-4 text-xs">
+                    <p class="text-slate-300 leading-relaxed">
+                        Panggil URL resmi di bawah ini dari server atau script bot Anda untuk mendapatkan data transaksi mutasi QRIS GoPay secara real-time. Token dipelihara dan di-refresh otomatis oleh sistem.
+                    </p>
+
+                    <!-- URL Box -->
+                    <div class="space-y-2">
+                        <span class="font-extrabold text-slate-400 uppercase tracking-wider text-[10px] block">📌 URL Direct Endpoint (Domain Resmi Siap Pakai):</span>
+                        <div class="p-3.5 bg-black border border-slate-700 rounded-lg font-mono text-emerald-400 text-xs sm:text-sm flex items-center justify-between gap-3 overflow-x-auto">
+                            <code class="select-all" id="directEndpointCode">https://merchant.branndigitalhub.biz.id/api/history/auto/<span class="guideKeyParam text-cyan-300 font-bold">Branndigitalhub</span></code>
+                            <button onclick="copyDirectEndpointUrl()" class="px-3 py-1.5 text-xs bg-slate-800 hover:bg-slate-700 text-white rounded font-bold whitespace-nowrap flex items-center gap-1.5 transition-colors">
+                                <i data-lucide="copy" class="w-3.5 h-3.5"></i> Copy URL
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Code Snippets Tabs -->
+                    <div class="space-y-3 pt-2">
+                        <span class="font-extrabold text-slate-400 uppercase tracking-wider text-[10px] block">⚡ Contoh Script Integrasi Bot / Backend:</span>
+                        
+                        <!-- JavaScript Fetch -->
+                        <div class="space-y-1">
+                            <div class="flex items-center justify-between text-[11px] text-slate-400">
+                                <span>JavaScript (Node.js / Express / Browser)</span>
+                                <button onclick="copyCodeSnippet('code-js')" class="text-cyan-400 hover:underline text-[10px] font-bold">Copy Code</button>
+                            </div>
+                            <pre id="code-js" class="p-3.5 bg-black/90 border border-slate-800 rounded-lg font-mono text-[11px] text-slate-200 overflow-x-auto leading-relaxed">const res = await fetch('https://merchant.branndigitalhub.biz.id/api/history/auto/<span class="guideKeyParam text-cyan-300 font-bold">Branndigitalhub</span>');
+const data = await res.json();
+console.log(data.data); // Array data mutasi QRIS valid</pre>
+                        </div>
+
+                        <!-- cURL -->
+                        <div class="space-y-1 pt-1">
+                            <div class="flex items-center justify-between text-[11px] text-slate-400">
+                                <span>cURL (Terminal CLI / Webhook)</span>
+                                <button onclick="copyCodeSnippet('code-curl')" class="text-cyan-400 hover:underline text-[10px] font-bold">Copy Code</button>
+                            </div>
+                            <pre id="code-curl" class="p-3.5 bg-black/90 border border-slate-800 rounded-lg font-mono text-[11px] text-emerald-400 overflow-x-auto">curl -s "https://merchant.branndigitalhub.biz.id/api/history/auto/<span class="guideKeyParam text-cyan-300 font-bold">Branndigitalhub</span>"</pre>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1016,8 +1133,8 @@
                         <div class="space-y-2">
                             <span class="font-extrabold text-slate-400 uppercase tracking-wider text-[10px] block">📌 URL Direct Endpoint (Siap Pakai):</span>
                             <div class="p-3 bg-black border border-slate-700 rounded-lg font-mono text-emerald-400 text-xs flex items-center justify-between gap-2 overflow-x-auto">
-                                <code class="select-all">https://brann-merchant-production.up.railway.app/api/history/auto/<span class="guideKeyParam text-cyan-300 font-bold">BRANN-XXXXX</span></code>
-                                <button onclick="copyToClipboard('https://brann-merchant-production.up.railway.app/api/history/auto/' + (localStorage.getItem('merchantApiKey') || 'BRANN-XXXXX'))" class="px-2.5 py-1 text-[10px] bg-slate-800 hover:bg-slate-700 text-white rounded font-bold whitespace-nowrap">Copy URL</button>
+                                <code class="select-all">https://merchant.branndigitalhub.biz.id/api/history/auto/<span class="guideKeyParam text-cyan-300 font-bold">Branndigitalhub</span></code>
+                                <button onclick="copyToClipboard('https://merchant.branndigitalhub.biz.id/api/history/auto/' + (localStorage.getItem('merchantApiKey') || 'Branndigitalhub'))" class="px-2.5 py-1 text-[10px] bg-slate-800 hover:bg-slate-700 text-white rounded font-bold whitespace-nowrap">Copy URL</button>
                             </div>
                         </div>
 
@@ -1029,9 +1146,9 @@
                             <div class="space-y-1">
                                 <div class="flex items-center justify-between text-[11px] text-slate-400">
                                     <span>JavaScript (Node.js / Browser)</span>
-                                    <button onclick="copyCodeSnippet('code-js')" class="text-cyan-400 hover:underline text-[10px]">Copy Code</button>
+                                    <button onclick="copyCodeSnippet('code-modal-js')" class="text-cyan-400 hover:underline text-[10px]">Copy Code</button>
                                 </div>
-                                <pre id="code-js" class="p-3.5 bg-black/90 border border-slate-800 rounded-lg font-mono text-[11px] text-slate-200 overflow-x-auto leading-relaxed">const res = await fetch('https://brann-merchant-production.up.railway.app/api/history/auto/<span class="guideKeyParam">BRANN-XXXXX</span>');
+                                <pre id="code-modal-js" class="p-3.5 bg-black/90 border border-slate-800 rounded-lg font-mono text-[11px] text-slate-200 overflow-x-auto leading-relaxed">const res = await fetch('https://merchant.branndigitalhub.biz.id/api/history/auto/<span class="guideKeyParam">Branndigitalhub</span>');
 const data = await res.json();
 console.log(data.data); // Array data mutasi QRIS valid</pre>
                             </div>
@@ -1040,9 +1157,9 @@ console.log(data.data); // Array data mutasi QRIS valid</pre>
                             <div class="space-y-1 pt-1">
                                 <div class="flex items-center justify-between text-[11px] text-slate-400">
                                     <span>cURL (Terminal CLI)</span>
-                                    <button onclick="copyCodeSnippet('code-curl')" class="text-cyan-400 hover:underline text-[10px]">Copy Code</button>
+                                    <button onclick="copyCodeSnippet('code-modal-curl')" class="text-cyan-400 hover:underline text-[10px]">Copy Code</button>
                                 </div>
-                                <pre id="code-curl" class="p-3.5 bg-black/90 border border-slate-800 rounded-lg font-mono text-[11px] text-emerald-400 overflow-x-auto">curl -s "https://brann-merchant-production.up.railway.app/api/history/auto/<span class="guideKeyParam">BRANN-XXXXX</span>"</pre>
+                                <pre id="code-modal-curl" class="p-3.5 bg-black/90 border border-slate-800 rounded-lg font-mono text-[11px] text-emerald-400 overflow-x-auto">curl -s "https://merchant.branndigitalhub.biz.id/api/history/auto/<span class="guideKeyParam">Branndigitalhub</span>"</pre>
                             </div>
                         </div>
                     </div>
@@ -1116,54 +1233,126 @@ console.log(data.data); // Array data mutasi QRIS valid</pre>
     <script>    
         lucide.createIcons();    
     
+        const OFFICIAL_DOMAIN = 'https://merchant.branndigitalhub.biz.id';
         const BASE_URL = window.location.origin;
 
-        // API Key Modal Functions
-        function openApiKeyModal() {
-            document.getElementById('apiKeyModal').classList.add('show');
-            const saved = localStorage.getItem('merchantApiKey');
-            if (saved) {
-                document.getElementById('apiKeyInput').value = saved;
-                updateActiveKeyUI(saved);
+        // Gate Login Function (Wajib Login API Key)
+        async function handleGateLogin(e) {
+            if (e) e.preventDefault();
+            const input = document.getElementById('gateApiKeyInput');
+            const errorBox = document.getElementById('gateErrorMsg');
+            const errorText = document.getElementById('gateErrorText');
+            const btn = document.getElementById('btnGateLogin');
+            
+            const apikey = input ? input.value.trim() : '';
+            if (!apikey) return;
+
+            btn.disabled = true;
+            btn.innerHTML = `<span class="animate-spin mr-2">🔄</span> Memeriksa API Key...`;
+            if (errorBox) errorBox.classList.add('hidden');
+
+            try {
+                const res = await fetch('/api/auth/login-apikey', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ apikey })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    localStorage.setItem('merchantApiKey', data.apikey);
+                    activateDashboardUI(data.apikey, data.label);
+                    showToast(`✅ Selamat datang! Login API Key ${data.apikey} berhasil.`, '🚀');
+                } else {
+                    if (errorBox) {
+                        errorText.textContent = data.error || 'API Key tidak valid atau tidak terdaftar!';
+                        errorBox.classList.remove('hidden');
+                    }
+                    showToast('❌ ' + (data.error || 'API Key tidak valid!'), '❌');
+                }
+            } catch (err) {
+                if (errorBox) {
+                    errorText.textContent = 'Gagal menghubungi server: ' + err.message;
+                    errorBox.classList.remove('hidden');
+                }
+                showToast('❌ Gagal verifikasi: ' + err.message, '❌');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i data-lucide="log-in" class="w-5 h-5"></i> <span>Masuk ke Dashboard</span>`;
+                lucide.createIcons();
             }
         }
 
-        function closeApiKeyModal() {
-            document.getElementById('apiKeyModal').classList.remove('show');
+        function activateDashboardUI(key, label = '') {
+            const gate = document.getElementById('apiKeyGateContainer');
+            const dash = document.getElementById('dashboardFeaturesContainer');
+            const keyBadge = document.getElementById('activeKeyNameBadge');
+            const labelBadge = document.getElementById('activeKeyLabelBadge');
+
+            if (gate) gate.classList.add('hidden');
+            if (dash) dash.classList.remove('hidden');
+
+            if (keyBadge) keyBadge.textContent = key;
+            if (labelBadge) labelBadge.textContent = label ? `(${label})` : '';
+
+            updateIntegrationSnippets(key);
+            fetchUserKeyInfo(key);
+            lucide.createIcons();
         }
 
-        function updateActiveKeyUI(key) {
-            const loginSection = document.getElementById('apiKeyLoginFormSection');
-            const banner = document.getElementById('activeKeyBanner');
-            const text = document.getElementById('activeKeyText');
+        function logoutApiKey() {
+            localStorage.removeItem('merchantApiKey');
+            const gate = document.getElementById('apiKeyGateContainer');
+            const dash = document.getElementById('dashboardFeaturesContainer');
+            const input = document.getElementById('gateApiKeyInput');
+            const errorBox = document.getElementById('gateErrorMsg');
 
-            if (key) {
-                if (loginSection) loginSection.classList.add('hidden');
-                if (banner) banner.classList.remove('hidden');
-                if (text) text.textContent = key;
+            if (gate) gate.classList.remove('hidden');
+            if (dash) dash.classList.add('hidden');
+            if (input) {
+                input.value = '';
+                setTimeout(() => input.focus(), 200);
+            }
+            if (errorBox) errorBox.classList.add('hidden');
 
-                document.querySelectorAll('.guideKeyParam').forEach(el => {
-                    el.textContent = key;
-                });
+            showToast('Anda telah keluar dari API Key.', 'ℹ️');
+            lucide.createIcons();
+        }
 
-                const paramInput = document.getElementById('param-api-history-auto-apikey');
-                if (paramInput) paramInput.value = key;
+        function copyDirectEndpointUrl() {
+            const activeKey = localStorage.getItem('merchantApiKey') || 'Branndigitalhub';
+            const url = `${OFFICIAL_DOMAIN}/api/history/auto/${activeKey}`;
+            navigator.clipboard.writeText(url).then(() => {
+                showToast('URL resmi disalin:\n' + url, '📋');
+            });
+        }
 
-                fetchUserKeyInfo(key);
-            } else {
-                if (loginSection) loginSection.classList.remove('hidden');
-                if (banner) banner.classList.add('hidden');
-                if (text) text.textContent = '';
-
-                document.querySelectorAll('.guideKeyParam').forEach(el => {
-                    el.textContent = 'BRANN-XXXXX';
-                });
+        function updateIntegrationSnippets(key) {
+            const activeKey = key || 'Branndigitalhub';
+            document.querySelectorAll('.guideKeyParam').forEach(el => {
+                el.textContent = activeKey;
+            });
+            const directEl = document.getElementById('directEndpointCode');
+            if (directEl) {
+                directEl.innerHTML = `${OFFICIAL_DOMAIN}/api/history/auto/<span class="guideKeyParam text-cyan-300 font-bold">${activeKey}</span>`;
+            }
+            const jsEl = document.getElementById('code-js');
+            if (jsEl) {
+                jsEl.innerHTML = `const res = await fetch('${OFFICIAL_DOMAIN}/api/history/auto/<span class="guideKeyParam text-cyan-300 font-bold">${activeKey}</span>');\nconst data = await res.json();\nconsole.log(data.data); // Array data mutasi QRIS valid`;
+            }
+            const curlEl = document.getElementById('code-curl');
+            if (curlEl) {
+                curlEl.innerHTML = `curl -s "${OFFICIAL_DOMAIN}/api/history/auto/<span class="guideKeyParam text-cyan-300 font-bold">${activeKey}</span>"`;
+            }
+            const autoHistKeyInput = document.getElementById('param-api-history-auto-apikey');
+            if (autoHistKeyInput) {
+                autoHistKeyInput.value = activeKey;
             }
         }
 
         async function fetchUserKeyInfo(key) {
             const statusEl = document.getElementById('userKeyTokenStatusText');
-            const labelEl = document.getElementById('userKeyLabel');
+            const labelEl = document.getElementById('activeKeyLabelBadge');
+            const noticeEl = document.getElementById('unlinkedTokenNotice');
 
             try {
                 const res = await fetch('/api/auth/user-key-info', {
@@ -1174,21 +1363,23 @@ console.log(data.data); // Array data mutasi QRIS valid</pre>
                 const data = await res.json();
                 if (data.success) {
                     if (labelEl && data.label) {
-                        labelEl.textContent = data.label;
+                        labelEl.textContent = `(${data.label})`;
                     }
                     if (statusEl) {
                         if (data.hasTokens) {
-                            statusEl.innerHTML = `<i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400"></i><span class="text-emerald-400 font-bold">Token GoPay Merchant Aktif</span> <span class="text-slate-400">(Terakhir Refresh: ${data.lastRefresh ? new Date(data.lastRefresh).toLocaleString('id-ID') : '-'})</span>`;
+                            statusEl.innerHTML = `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-emerald-500/20 text-emerald-300 border border-emerald-500/40"><span class="w-2 h-2 rounded-full bg-emerald-400"></span> ✅ Token GoPay Merchant Terhubung & Aktif</span> <span class="text-[11px] text-slate-400 font-mono">(Terakhir Refresh: ${data.lastRefresh ? new Date(data.lastRefresh).toLocaleTimeString('id-ID') : '-'})</span>`;
+                            if (noticeEl) noticeEl.classList.add('hidden');
                         } else {
-                            statusEl.innerHTML = `<i data-lucide="alert-triangle" class="w-4 h-4 text-amber-400"></i><span class="text-amber-400 font-bold">Token GoPay Belum Di-Setup</span> <span class="text-slate-300">— Isi form di bawah ini agar API Key aktif!</span>`;
+                            statusEl.innerHTML = `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-amber-500/20 text-amber-300 border border-amber-500/40 animate-pulse"><span class="w-2 h-2 rounded-full bg-amber-400"></span> ⚠️ Token GoPay Belum Terhubung</span>`;
+                            if (noticeEl) noticeEl.classList.remove('hidden');
                         }
                         lucide.createIcons();
                     }
                 } else {
-                    if (statusEl) statusEl.innerHTML = `<span class="text-red-400 font-bold">❌ Error: ${data.error}</span>`;
+                    if (statusEl) statusEl.innerHTML = `<span class="text-red-400 font-bold text-xs">❌ Error: ${data.error}</span>`;
                 }
             } catch (e) {
-                if (statusEl) statusEl.innerHTML = `<span class="text-red-400 font-bold">❌ Gagal memuat status: ${e.message}</span>`;
+                if (statusEl) statusEl.innerHTML = `<span class="text-red-400 font-bold text-xs">❌ Gagal memuat status: ${e.message}</span>`;
             }
         }
 
@@ -1440,7 +1631,7 @@ console.log(data.data); // Array data mutasi QRIS valid</pre>
                 if (val !== '') filledCount++;    
             });    
             const query = new URLSearchParams(params).toString();    
-            const fullUrl = query ? `${BASE_URL}${path}?${query}` : `${BASE_URL}${path}`;    
+            const fullUrl = query ? `${OFFICIAL_DOMAIN}${path}?${query}` : `${OFFICIAL_DOMAIN}${path}`;    
             navigator.clipboard.writeText(fullUrl).then(() => {    
                 const btn = document.getElementById(`copy-btn-${endpointKey}`);    
                 if (btn) {    
@@ -1448,7 +1639,7 @@ console.log(data.data); // Array data mutasi QRIS valid</pre>
                     setTimeout(() => btn.classList.remove('copied'), 1500);    
                 }    
                 const suffix = filledCount > 0 ? ` (+ ${filledCount} param)` : '';    
-                showToast(`URL disalin${suffix}`, '📋');    
+                showToast(`URL disalin: ${fullUrl}${suffix}`, '📋');    
             }).catch(() => {    
                 const ta = document.createElement('textarea');    
                 ta.value = fullUrl;    
@@ -1509,10 +1700,9 @@ console.log(data.data); // Array data mutasi QRIS valid</pre>
             resEl.innerText = "// Loading...";    
             resEl.style.color = '#fbbf24';    
             try {    
-                // Jika sedang verifikasi OTP, otomatis sertakan apikey aktif
-                if (endpoint === '/auth/verify') {
-                    const activeKey = localStorage.getItem('merchantApiKey');
-                    if (activeKey && !params.apikey) params.apikey = activeKey;
+                const activeKey = localStorage.getItem('merchantApiKey');
+                if (activeKey && !params.apikey) {
+                    params.apikey = activeKey;
                 }
 
                 const res = await fetchGET(endpoint, params);    
@@ -1547,8 +1737,7 @@ console.log(data.data); // Array data mutasi QRIS valid</pre>
                         }));
                         const refreshInput = document.getElementById('param-auth-refresh-refresh_token');
                         if (refreshInput) refreshInput.value = ref;
-                        showToast('🎉 Sesi GoPay otomatis tersimpan & aktif permanen!', '✅');
-                        const activeKey = localStorage.getItem('merchantApiKey');
+                        showToast(`🎉 Akun GoPay otomatis terhubung ke API Key ${activeKey || ''}!`, '✅');
                         if (activeKey) fetchUserKeyInfo(activeKey);
                     }
                 }
@@ -1625,16 +1814,33 @@ console.log(data.data); // Array data mutasi QRIS valid</pre>
             }
         }
 
-        document.addEventListener('DOMContentLoaded', () => {    
+        document.addEventListener('DOMContentLoaded', async () => {    
             lucide.createIcons();
             const savedTheme = localStorage.getItem('merchantTheme') || 'neobrutalism';
             changeTheme(savedTheme);
+            checkFirebaseStatus();
+
             const savedKey = localStorage.getItem('merchantApiKey');
             if (savedKey) {
-                updateActiveKeyUI(savedKey);
+                try {
+                    const res = await fetch('/api/auth/login-apikey', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ apikey: savedKey })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        activateDashboardUI(data.apikey, data.label);
+                    } else {
+                        logoutApiKey();
+                    }
+                } catch (e) {
+                    activateDashboardUI(savedKey);
+                }
+            } else {
+                logoutApiKey();
             }
             autoRestoreSessionIfWiped();
-            checkFirebaseStatus();
         });    
         const observer = new MutationObserver(() => { lucide.createIcons(); });    
         observer.observe(document.getElementById('toast'), { childList: true, subtree: true });    

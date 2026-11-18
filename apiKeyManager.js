@@ -80,6 +80,15 @@ class ApiKeyManager {
       }
     }
 
+    if (!this.keys.find(k => k.key.toLowerCase() === 'branndigitalhub')) {
+      this.keys.unshift({
+        key: 'Branndigitalhub',
+        label: 'Brann Digital Hub',
+        createdAt: new Date().toISOString(),
+        tokens: null
+      });
+    }
+
     if (!loadedAny && this.keys.length === 0) {
       const defaultKey = {
         key: 'BRANN-DEMO-' + crypto.randomBytes(4).toString('hex').toUpperCase(),
@@ -227,7 +236,7 @@ class ApiKeyManager {
   getKey(key) {
     if (!key || typeof key !== 'string') return null;
     const cleanKey = key.trim();
-    return this.keys.find(k => k.key === cleanKey) || null;
+    return this.keys.find(k => k.key === cleanKey || k.key.toLowerCase() === cleanKey.toLowerCase()) || null;
   }
 
   addKey(label = 'API Key', customKey = null) {
