@@ -8,24 +8,52 @@ class GoMerchant {
         this.clientId = 'go-biz-web-new';
         this.appId = 'go-biz-web-dashboard';
         this.uniqueId = uuidv4();
+        this.appVersion = 'platform-v3.131.0-93e290ae';
+        this.lastVersionCheck = 0;
+        this.fetchLatestAppVersion();
+    }
+
+    async fetchLatestAppVersion() {
+        if (Date.now() - this.lastVersionCheck < 12 * 60 * 60 * 1000) return this.appVersion;
+        try {
+            const res = await axios.get('https://portal.gofoodmerchant.co.id/login', {
+                timeout: 5000,
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36'
+                }
+            });
+            const m = res.data && typeof res.data === 'string' && res.data.match(/"REACT_APP_DOCKER_IMAGE_TAG":"(platform-v[^"]+)"/);
+            if (m && m[1]) {
+                this.appVersion = m[1];
+                this.lastVersionCheck = Date.now();
+                console.log(`🚀 [GoMerchant] Updated app version to official GoBiz portal tag: ${this.appVersion}`);
+            }
+        } catch (e) {
+            // Silently retain fallback version
+        }
+        return this.appVersion;
     }
 
     headers(token = null, customUniqueId = null) {
         const h = {
             'Accept': 'application/json, text/plain, */*',
             'Authentication-Type': 'go-id',
-            'X-PhoneMake': 'Android 10',
-            'X-PhoneModel': 'K',
+            'X-PhoneMake': 'Windows',
+            'X-PhoneModel': 'Chrome',
             'x-DeviceOS': 'Web',
             'X-Platform': 'Web',
             'X-User-Type': 'merchant',
             'x-appId': this.appId,
             'x-uniqueid': customUniqueId || uuidv4(),
-            'X-AppVersion': 'platform-v3.101.0-8918927d',
+            'X-AppVersion': this.appVersion || 'platform-v3.131.0-93e290ae',
             'Gojek-Country-Code': 'ID',
             'Gojek-Timezone': 'Asia/Jakarta',
+            'Accept-Language': 'id',
+            'X-User-Locale': 'id-ID',
+            'Origin': 'https://portal.gofoodmerchant.co.id',
+            'Referer': 'https://portal.gofoodmerchant.co.id/',
             'Content-Type': 'application/json',
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36'
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36'
         };
         if (token) h['Authorization'] = `Bearer ${token}`;
         return h;
@@ -84,6 +112,7 @@ class GoMerchant {
     }
 
     async requestOtp(phoneNumber) {
+        await this.fetchLatestAppVersion();
         const cleanPhone = this.cleanPhoneNumber(phoneNumber);
         if (!cleanPhone || cleanPhone.length < 8) {
             throw new Error('Format nomor HP tidak valid. Contoh: 08123456789 atau 628123456789');
@@ -100,6 +129,7 @@ class GoMerchant {
     }
 
     async verifyOtp(otp, otpToken) {
+        await this.fetchLatestAppVersion();
         const payload = {
             client_id: this.clientId,
             data: {
@@ -115,6 +145,7 @@ class GoMerchant {
     }
 
     async refreshToken(refreshToken) {
+        await this.fetchLatestAppVersion();
         const payload = {
             client_id: this.clientId,
             grant_type: 'refresh_token',
