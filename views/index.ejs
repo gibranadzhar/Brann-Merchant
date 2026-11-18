@@ -600,7 +600,7 @@
                 <form id="gateLoginForm" onsubmit="handleGateLogin(event)" class="space-y-4 max-w-md mx-auto text-left">
                     <div>
                         <label class="block text-xs font-black uppercase tracking-wider mb-2" style="color: var(--ink);">API Key Anda</label>
-                        <input type="text" id="gateApiKeyInput" placeholder="Contoh: Branndigitalhub" class="w-full px-4 py-3.5 font-mono font-bold text-sm sm:text-base rounded-xl outline-none" style="background: #ffffff; border: 3px solid var(--ink); box-shadow: 3px 3px 0 0 var(--shadow-color);" required autofocus>
+                        <input type="text" id="gateApiKeyInput" placeholder="Masukkan API Key (contoh: BRANN-XXXXX)" class="w-full px-4 py-3.5 font-mono font-bold text-sm sm:text-base rounded-xl outline-none" style="background: #ffffff; border: 3px solid var(--ink); box-shadow: 3px 3px 0 0 var(--shadow-color);" required autofocus>
                     </div>
 
                     <div id="gateErrorMsg" class="hidden p-3.5 rounded-xl border-2 border-red-500 bg-red-50 text-red-700 text-xs font-bold flex items-center gap-2">
@@ -635,8 +635,8 @@
                         <div>
                             <div class="flex items-center gap-2 flex-wrap">
                                 <span class="text-xs font-black uppercase tracking-wider text-slate-400">Sesi API Key:</span>
-                                <span id="activeKeyNameBadge" class="px-2.5 py-0.5 rounded-md bg-amber-400/20 text-amber-300 border border-amber-400/40 font-mono font-extrabold text-sm">Branndigitalhub</span>
-                                <span id="activeKeyLabelBadge" class="text-xs font-bold text-slate-300">(Brann Digital Hub)</span>
+                                <span id="activeKeyNameBadge" class="px-2.5 py-0.5 rounded-md bg-amber-400/20 text-amber-300 border border-amber-400/40 font-mono font-extrabold text-sm">-</span>
+                                <span id="activeKeyLabelBadge" class="text-xs font-bold text-slate-300"></span>
                             </div>
                             <div class="mt-1 flex items-center gap-2 flex-wrap" id="userKeyTokenStatusText">
                                 <span class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-extrabold bg-amber-500/20 text-amber-300 border border-amber-500/30">
@@ -687,7 +687,7 @@
                     <div class="space-y-2">
                         <span class="font-extrabold text-slate-400 uppercase tracking-wider text-[10px] block">📌 URL Direct Endpoint (Domain Resmi Siap Pakai):</span>
                         <div class="p-3.5 bg-black border border-slate-700 rounded-lg font-mono text-emerald-400 text-xs sm:text-sm flex items-center justify-between gap-3 overflow-x-auto">
-                            <code class="select-all" id="directEndpointCode">https://merchant.branndigitalhub.biz.id/api/history/auto/<span class="guideKeyParam text-cyan-300 font-bold">Branndigitalhub</span></code>
+                            <code class="select-all" id="directEndpointCode">https://merchant.branndigitalhub.biz.id/api/history/auto/<span class="guideKeyParam text-cyan-300 font-bold">:apikey</span></code>
                             <button onclick="copyDirectEndpointUrl()" class="px-3 py-1.5 text-xs bg-slate-800 hover:bg-slate-700 text-white rounded font-bold whitespace-nowrap flex items-center gap-1.5 transition-colors">
                                 <i data-lucide="copy" class="w-3.5 h-3.5"></i> Copy URL
                             </button>
@@ -704,7 +704,7 @@
                                 <span>JavaScript (Node.js / Express / Browser)</span>
                                 <button onclick="copyCodeSnippet('code-js')" class="text-cyan-400 hover:underline text-[10px] font-bold">Copy Code</button>
                             </div>
-                            <pre id="code-js" class="p-3.5 bg-black/90 border border-slate-800 rounded-lg font-mono text-[11px] text-slate-200 overflow-x-auto leading-relaxed">const res = await fetch('https://merchant.branndigitalhub.biz.id/api/history/auto/<span class="guideKeyParam text-cyan-300 font-bold">Branndigitalhub</span>');
+                            <pre id="code-js" class="p-3.5 bg-black/90 border border-slate-800 rounded-lg font-mono text-[11px] text-slate-200 overflow-x-auto leading-relaxed">const res = await fetch('https://merchant.branndigitalhub.biz.id/api/history/auto/<span class="guideKeyParam text-cyan-300 font-bold">:apikey</span>');
 const data = await res.json();
 console.log(data.data); // Array data mutasi QRIS valid</pre>
                         </div>
@@ -715,7 +715,7 @@ console.log(data.data); // Array data mutasi QRIS valid</pre>
                                 <span>cURL (Terminal CLI / Webhook)</span>
                                 <button onclick="copyCodeSnippet('code-curl')" class="text-cyan-400 hover:underline text-[10px] font-bold">Copy Code</button>
                             </div>
-                            <pre id="code-curl" class="p-3.5 bg-black/90 border border-slate-800 rounded-lg font-mono text-[11px] text-emerald-400 overflow-x-auto">curl -s "https://merchant.branndigitalhub.biz.id/api/history/auto/<span class="guideKeyParam text-cyan-300 font-bold">Branndigitalhub</span>"</pre>
+                            <pre id="code-curl" class="p-3.5 bg-black/90 border border-slate-800 rounded-lg font-mono text-[11px] text-emerald-400 overflow-x-auto">curl -s "https://merchant.branndigitalhub.biz.id/api/history/auto/<span class="guideKeyParam text-cyan-300 font-bold">:apikey</span>"</pre>
                         </div>
                     </div>
                 </div>
@@ -1133,8 +1133,8 @@ console.log(data.data); // Array data mutasi QRIS valid</pre>
                         <div class="space-y-2">
                             <span class="font-extrabold text-slate-400 uppercase tracking-wider text-[10px] block">📌 URL Direct Endpoint (Siap Pakai):</span>
                             <div class="p-3 bg-black border border-slate-700 rounded-lg font-mono text-emerald-400 text-xs flex items-center justify-between gap-2 overflow-x-auto">
-                                <code class="select-all">https://merchant.branndigitalhub.biz.id/api/history/auto/<span class="guideKeyParam text-cyan-300 font-bold">Branndigitalhub</span></code>
-                                <button onclick="copyToClipboard('https://merchant.branndigitalhub.biz.id/api/history/auto/' + (localStorage.getItem('merchantApiKey') || 'Branndigitalhub'))" class="px-2.5 py-1 text-[10px] bg-slate-800 hover:bg-slate-700 text-white rounded font-bold whitespace-nowrap">Copy URL</button>
+                                <code class="select-all">https://merchant.branndigitalhub.biz.id/api/history/auto/<span class="guideKeyParam text-cyan-300 font-bold">:apikey</span></code>
+                                <button onclick="copyToClipboard('https://merchant.branndigitalhub.biz.id/api/history/auto/' + (localStorage.getItem('merchantApiKey') || ':apikey'))" class="px-2.5 py-1 text-[10px] bg-slate-800 hover:bg-slate-700 text-white rounded font-bold whitespace-nowrap">Copy URL</button>
                             </div>
                         </div>
 
@@ -1148,7 +1148,7 @@ console.log(data.data); // Array data mutasi QRIS valid</pre>
                                     <span>JavaScript (Node.js / Browser)</span>
                                     <button onclick="copyCodeSnippet('code-modal-js')" class="text-cyan-400 hover:underline text-[10px]">Copy Code</button>
                                 </div>
-                                <pre id="code-modal-js" class="p-3.5 bg-black/90 border border-slate-800 rounded-lg font-mono text-[11px] text-slate-200 overflow-x-auto leading-relaxed">const res = await fetch('https://merchant.branndigitalhub.biz.id/api/history/auto/<span class="guideKeyParam">Branndigitalhub</span>');
+                                <pre id="code-modal-js" class="p-3.5 bg-black/90 border border-slate-800 rounded-lg font-mono text-[11px] text-slate-200 overflow-x-auto leading-relaxed">const res = await fetch('https://merchant.branndigitalhub.biz.id/api/history/auto/<span class="guideKeyParam">:apikey</span>');
 const data = await res.json();
 console.log(data.data); // Array data mutasi QRIS valid</pre>
                             </div>
@@ -1159,7 +1159,7 @@ console.log(data.data); // Array data mutasi QRIS valid</pre>
                                     <span>cURL (Terminal CLI)</span>
                                     <button onclick="copyCodeSnippet('code-modal-curl')" class="text-cyan-400 hover:underline text-[10px]">Copy Code</button>
                                 </div>
-                                <pre id="code-modal-curl" class="p-3.5 bg-black/90 border border-slate-800 rounded-lg font-mono text-[11px] text-emerald-400 overflow-x-auto">curl -s "https://merchant.branndigitalhub.biz.id/api/history/auto/<span class="guideKeyParam">Branndigitalhub</span>"</pre>
+                                <pre id="code-modal-curl" class="p-3.5 bg-black/90 border border-slate-800 rounded-lg font-mono text-[11px] text-emerald-400 overflow-x-auto">curl -s "https://merchant.branndigitalhub.biz.id/api/history/auto/<span class="guideKeyParam">:apikey</span>"</pre>
                             </div>
                         </div>
                     </div>
@@ -1319,7 +1319,7 @@ console.log(data.data); // Array data mutasi QRIS valid</pre>
         }
 
         function copyDirectEndpointUrl() {
-            const activeKey = localStorage.getItem('merchantApiKey') || 'Branndigitalhub';
+            const activeKey = localStorage.getItem('merchantApiKey') || ':apikey';
             const url = `${OFFICIAL_DOMAIN}/api/history/auto/${activeKey}`;
             navigator.clipboard.writeText(url).then(() => {
                 showToast('URL resmi disalin:\n' + url, '📋');
@@ -1327,7 +1327,7 @@ console.log(data.data); // Array data mutasi QRIS valid</pre>
         }
 
         function updateIntegrationSnippets(key) {
-            const activeKey = key || 'Branndigitalhub';
+            const activeKey = key || ':apikey';
             document.querySelectorAll('.guideKeyParam').forEach(el => {
                 el.textContent = activeKey;
             });
